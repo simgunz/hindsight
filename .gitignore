@@ -1,9 +1,21 @@
 node_modules/
 .DS_Store
 
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
 # Zensical build output
 site/
 .cache/
 
 # Playwright MCP artifacts
 .playwright-mcp/
+
+# Local Netlify folder
+.netlify
