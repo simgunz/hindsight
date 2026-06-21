@@ -1,6 +1,7 @@
 import './style.css'
 
-const app = document.querySelector<HTMLDivElement>('#app')!
+const app = document.querySelector<HTMLDivElement>('#app')
+if (!app) throw new Error('Missing #app root element')
 
 const shell = document.createElement('main')
 shell.className = 'shell'
