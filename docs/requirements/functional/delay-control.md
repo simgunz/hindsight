@@ -1,6 +1,6 @@
 ---
 id: req-delay-control
-status: draft
+status: approved
 ---
 
 # Requirements — Delay Control

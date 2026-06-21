@@ -1,6 +1,6 @@
 ---
 id: req-non-functional
-status: draft
+status: approved
 ---
 
 # Requirements — Non-functional

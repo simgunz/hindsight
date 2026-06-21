@@ -1,6 +1,6 @@
 ---
 id: req-delayed-mirror
-status: draft
+status: approved
 ---
 
 # Requirements — Delayed Mirror
