@@ -3,7 +3,7 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": { "includes": ["src/**", "*.json", "!package-lock.json"] },
   "formatter": { "indentStyle": "space", "indentWidth": 2 },
-  "linter": { "rules": { "recommended": true } },
+  "linter": { "rules": { "preset": "recommended" } },
   "javascript": {
     "formatter": { "quoteStyle": "single", "semicolons": "asNeeded" }
   }
