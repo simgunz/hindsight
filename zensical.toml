@@ -21,7 +21,18 @@ nav = [
     { "Live Mirror" = "requirements/functional/live-mirror.md" },
     { "Non-functional" = "requirements/non-functional.md" },
   ] },
-  { "Decisions" = "decisions/index.md" },
+  { "Decisions" = [
+    { "Overview" = "decisions/index.md" },
+    { "0001 Web platform" = "decisions/0001-web-platform.md" },
+    { "0002 Vanilla TS + Vite" = "decisions/0002-vanilla-ts-vite.md" },
+    { "0003 Installable PWA" = "decisions/0003-installable-pwa.md" },
+    { "0004 Tooling: Biome + Vitest" = "decisions/0004-tooling-biome-vitest.md" },
+    { "0005 Netlify hosting" = "decisions/0005-netlify-hosting.md" },
+    { "0006 GitHub Actions CI gate" = "decisions/0006-github-actions-ci-gate.md" },
+    { "0007 Plain CSS" = "decisions/0007-plain-css.md" },
+    { "0008 localStorage" = "decisions/0008-localstorage.md" },
+    { "0009 Delayed playback buffer" = "decisions/0009-delayed-playback-buffer.md" },
+  ] },
   { "Open Questions" = "open-questions.md" },
 ]
 
