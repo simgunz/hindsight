@@ -11,6 +11,14 @@ Web app, TypeScript, Vite, no UI framework. Installable PWA + offline shell
 E2E deferred). Plain CSS, localStorage. Hosted on Netlify with a GitHub Actions test
 gate. Rationale and full stack in `docs/decisions/`.
 
+## Conventions & workflow
+
+- TypeScript; code style and linting enforced by Biome (`npm run lint`), unit tests
+  with Vitest.
+- Branch model: work on `staging`; `main` holds only stable, verified versions. The
+  CI gate (lint + type-check + test) must pass before merge to `main`.
+- Build only requirements with `status: approved` (see `docs/requirements/`).
+
 ## Documentation
 
 Planning docs live in `docs/` (built into a Zensical site):
