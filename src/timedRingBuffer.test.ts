@@ -32,4 +32,13 @@ describe('TimedRingBuffer', () => {
     expect(buffer.oldestTime).toBe(10)
     expect(buffer.newestTime).toBe(70)
   })
+
+  it('evicts entries older than the max window', () => {
+    const buffer = new TimedRingBuffer<string>(100)
+    buffer.push(0, 10, 'a')
+    buffer.push(50, 10, 'b')
+    buffer.push(100, 10, 'c')
+    buffer.push(200, 10, 'd')
+    expect(buffer.size).toBe(2)
+  })
 })
