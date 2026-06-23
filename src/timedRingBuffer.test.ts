@@ -16,4 +16,11 @@ describe('TimedRingBuffer', () => {
     buffer.push(66, 100, 'c')
     expect(buffer.chunkAt(40)).toBe('b')
   })
+
+  it('tracks total bytes across entries', () => {
+    const buffer = new TimedRingBuffer<string>()
+    buffer.push(0, 100, 'a')
+    buffer.push(33, 150, 'b')
+    expect(buffer.bytes).toBe(250)
+  })
 })
