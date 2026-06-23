@@ -21,7 +21,7 @@ gets its own file (`NNNN-title.md`) with a `status` of `proposed`, `approved`,
 | [0006](0006-github-actions-ci-gate.md) | GitHub Actions CI gate | approved |
 | [0007](0007-plain-css.md) | Plain CSS for styling | approved |
 | [0008](0008-localstorage.md) | localStorage for settings persistence | approved |
-| [0009](0009-delayed-playback-buffer.md) | Delayed playback via WebCodecs | proposed |
+| [0009](0009-delayed-playback-buffer.md) | Delayed playback via WebCodecs | approved |
 
 ## Stack summary
 
@@ -41,5 +41,5 @@ gets its own file (`NNNN-title.md`) with a `status` of `proposed`, `approved`,
 | Settings persistence | localStorage | 0008 |
 | Delayed buffer | WebCodecs (in-memory ring buffer of EncodedVideoChunks) | 0009 |
 
-> **Open risk:** ADR 0009 is `proposed` — the WebCodecs pipeline must be validated on
-> the target device in the Phase 4 walking skeleton before the app is built on it.
+> **Validated:** ADR 0009 (WebCodecs) confirmed on-device (Android Chrome + iPhone
+> Safari) on 2026-06-22; Firefox mobile is an accepted limitation.
