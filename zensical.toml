@@ -21,6 +21,9 @@ nav = [
     { "Live Mirror" = "requirements/functional/live-mirror.md" },
     { "Non-functional" = "requirements/non-functional.md" },
   ] },
+  { "Design" = [
+    { "Interaction Model" = "design/interaction-model.md" },
+  ] },
   { "Decisions" = [
     { "Overview" = "decisions/index.md" },
     { "0001 Web platform" = "decisions/0001-web-platform.md" },
