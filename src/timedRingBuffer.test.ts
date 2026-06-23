@@ -23,4 +23,13 @@ describe('TimedRingBuffer', () => {
     buffer.push(33, 150, 'b')
     expect(buffer.bytes).toBe(250)
   })
+
+  it('reports the oldest and newest entry times', () => {
+    const buffer = new TimedRingBuffer<string>()
+    buffer.push(10, 100, 'a')
+    buffer.push(40, 100, 'b')
+    buffer.push(70, 100, 'c')
+    expect(buffer.oldestTime).toBe(10)
+    expect(buffer.newestTime).toBe(70)
+  })
 })

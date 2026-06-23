@@ -21,6 +21,14 @@ export class TimedRingBuffer<T> {
     return this.totalBytes
   }
 
+  get oldestTime(): number | undefined {
+    return this.entries[0]?.time
+  }
+
+  get newestTime(): number | undefined {
+    return this.entries[this.entries.length - 1]?.time
+  }
+
   chunkAt(targetTime: number): T | undefined {
     let active: TimedEntry<T> | undefined
     for (const entry of this.entries) {
