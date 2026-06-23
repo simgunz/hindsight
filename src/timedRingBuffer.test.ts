@@ -41,4 +41,11 @@ describe('TimedRingBuffer', () => {
     buffer.push(200, 10, 'd')
     expect(buffer.size).toBe(2)
   })
+
+  it('keeps the frame straddling the window start so lookups at the edge resolve', () => {
+    const buffer = new TimedRingBuffer<string>(100)
+    buffer.push(0, 10, 'a')
+    buffer.push(150, 10, 'b')
+    expect(buffer.chunkAt(50)).toBe('a')
+  })
 })

@@ -20,7 +20,7 @@ export class TimedRingBuffer<T> {
   }
 
   private evict(cutoff: number): void {
-    while (this.entries.length > 0 && this.entries[0].time < cutoff) {
+    while (this.entries.length > 1 && this.entries[1].time <= cutoff) {
       const dropped = this.entries.shift()
       if (dropped) {
         this.totalBytes -= dropped.bytes
