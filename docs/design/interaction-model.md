@@ -124,14 +124,8 @@ offset; memory stays bounded and the picture never changes.
 
 Scrubbing cannot go earlier than the oldest buffered frame, nor later than live.
 
-## Requirement impact
+## Rationale
 
-Adopting the orthogonal model revises three approved requirements; these edits are
-pending:
-
-- **FR-006** — the base-delay range should include `0` (live) as a valid value.
-- **FR-014 / FR-015 / FR-016** — "Live Mirror" is reframed: live is `targetOffset =
-  0` reachable on either camera (not a front-camera-only mode), the front/back
-  switch is the camera button (not a mode switch), and FR-016's suspend/resume
-  becomes "a camera switch resets and re-ramps the buffer." Mirroring stays as
-  FR-015 specifies, now expressed as a function of the camera.
+The decision to adopt this orthogonal model (over the original two-mode framing) and
+the requirements it revised are recorded in
+[ADR-0010](../decisions/0010-orthogonal-interaction-model.md).

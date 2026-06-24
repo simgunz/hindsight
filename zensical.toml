@@ -35,6 +35,7 @@ nav = [
     { "0007 Plain CSS" = "decisions/0007-plain-css.md" },
     { "0008 localStorage" = "decisions/0008-localstorage.md" },
     { "0009 Delayed playback buffer" = "decisions/0009-delayed-playback-buffer.md" },
+    { "0010 Interaction model" = "decisions/0010-orthogonal-interaction-model.md" },
   ] },
   { "Open Questions" = "open-questions.md" },
 ]
