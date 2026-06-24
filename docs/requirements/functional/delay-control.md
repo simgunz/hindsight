@@ -17,10 +17,11 @@ Serves [US-003](../../user-stories/index.md#us-003-tune-the-delay) and
 | delaySeconds | Yes | Delay the preset applies | 60 |
 
 ### FR-006 — Set base delay
-The user SHALL be able to set the base delay within 5–180 seconds. Default is 60
-seconds. *(Serves US-003)*
+The user SHALL be able to set the base delay to live (`0`) or within 5–180 seconds.
+Default is 60 seconds. A base delay of `0` is the live edge of the buffer (no delay).
+*(Serves US-003; revised by [ADR-0010](../../decisions/0010-orthogonal-interaction-model.md))*
 
-*Example: set 30s for an archery cycle.*
+*Example: set 30s for an archery cycle; set 0 (live) to use the camera as a plain mirror.*
 
 ### FR-007 — Delay change takes effect immediately
 Changing the base delay SHALL take effect immediately. If the new delay exceeds the

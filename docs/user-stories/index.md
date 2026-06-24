@@ -89,11 +89,11 @@ to showing me 60s behind live.*
 ## Live Mirror
 
 ### US-008 — Live mirrored view
-**As an** athlete, **I want** a front-camera mode that shows me live with no delay,
-mirrored, **so that** I can watch myself in real time like a mirror.
+**As an** athlete, **I want** to see myself live with no delay (front camera
+mirrored), **so that** I can watch myself in real time like a mirror.
 
-*Example: I switch to the front camera and see a live, mirrored view of myself
-while moving.*
+*Example: I flip to the front camera, see a live mirrored view of myself while
+moving, then double-tap to jump to the delayed review of the set I just did.*
 
 ## Experience
 
