@@ -33,6 +33,26 @@ body {
   background: #000;
 }
 
+.delay-pill {
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: calc(env(safe-area-inset-top, 0px) + 0.75rem) 0.75rem;
+  padding: 0.3rem 0.75rem;
+  font:
+    600 1.05rem / 1 ui-monospace,
+    monospace;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 999px;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.delay-pill.steady {
+  opacity: 0.4;
+}
+
 .stats {
   position: fixed;
   top: 0;
