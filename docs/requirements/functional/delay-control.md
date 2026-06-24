@@ -17,8 +17,11 @@ Serves [US-003](../../user-stories/index.md#us-003-tune-the-delay) and
 | delaySeconds | Yes | Delay the preset applies | 60 |
 
 ### FR-006 — Set base delay
-The user SHALL be able to set the base delay to live (`0`) or within 5–180 seconds.
-Default is 60 seconds. A base delay of `0` is the live edge of the buffer (no delay).
+The user SHALL be able to set the base delay to live (`0`) or from 5 to 240 seconds in
+5-second steps. Default is 60 seconds. A base delay of `0` is the live edge of the
+buffer (no delay). The buffer retained is derived, not set by the user: `base delay +
+60s` rewatch headroom, capped at 300s (~210 MB) — see
+[OQ-2](../../open-questions.md#oq-2-buffer-window-and-rewatch-headroom).
 *(Serves US-003; revised by [ADR-0010](../../decisions/0010-orthogonal-interaction-model.md))*
 
 *Example: set 30s for an archery cycle; set 0 (live) to use the camera as a plain mirror.*

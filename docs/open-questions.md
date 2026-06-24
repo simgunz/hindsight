@@ -9,34 +9,6 @@ implementation.
 
 ## Pending Design Decisions
 
-### OQ-1: Mode-switch gesture
-**Context:** The app has two modes — delayed rear mirror and live front mirror.
-Phase 1 left the switching mechanism open.
-
-**Question:** How does the user switch between delayed-rear and live-front?
-
-**Options to explore:**
-- A dedicated edge gesture (e.g. two-finger swipe or swipe up)
-- A small, fading control in a corner
-- A vertical drag (reserving horizontal drag for scrubbing)
-
-**Status:** To be decided during implementation (interaction design).
-
-### OQ-2: Buffer window and rewatch headroom
-**Context:** Scrubbing back reaches the oldest footage in the buffer. The behavioral
-need is "rewatch recent reps," not full session history. Exact numbers affect memory use.
-
-**Question:** How much footage does the buffer retain beyond the current delay?
-
-**Options discussed:**
-- Retain `delay` + a fixed rewatch headroom (proposed default: 60s headroom)
-- Hard cap on total buffer (proposed default: ~5 minutes) to bound memory
-
-**Decision (preliminary):** Buffer = current delay + 60s headroom, capped at ~5 min;
-tune per device during Phase 4.
-
-**Status:** To be confirmed during implementation (device memory testing).
-
 ### OQ-3: Custom preset management
 **Context:** v1 seeds "Gym 60s" and "Archery 30s" presets ([FR-008](requirements/functional/delay-control.md#fr-008-delay-presets)).
 The user said presets were a "possible" nice-to-have.
@@ -59,4 +31,15 @@ The user said presets were a "possible" nice-to-have.
 
 ## Resolved Questions
 
-*(none yet)*
+### OQ-1: Mode-switch gesture
+Obsoleted by [ADR-0010](decisions/0010-orthogonal-interaction-model.md): there is no
+mode switch. Camera (front/back) is an independent toggle button, and a double-tap
+toggles live↔base on the delay axis. No dedicated switching gesture is needed.
+
+### OQ-2: Buffer window and rewatch headroom
+**Resolved:** the buffer is derived, not user-set. `buffer = base delay + 60s`
+rewatch headroom, capped at 300s. The cap follows the memory budget: at the measured
+~0.7 MB/s, 300s ≈ 210 MB, the safe ceiling before iOS reclaims the app. Base delay
+therefore caps at 240s (240 + 60 = 300). Lowering the encoder bitrate can extend the
+window if ever needed (a quality trade-off). See
+[FR-006](requirements/functional/delay-control.md#fr-006-set-base-delay).

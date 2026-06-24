@@ -15,7 +15,7 @@ The app is described by two independent variables, not a set of distinct "modes"
 
 - **Camera** — `front` or `back`. A small persistent on-screen button flips it.
   Determines mirroring (below). Switching camera resets the buffer and re-ramps.
-- **Delay** — a continuum from `0` (live) to `180s`. **"Live" is not a mode; it is
+- **Delay** — a continuum from `0` (live) to `240s`. **"Live" is not a mode; it is
   delay `0`, the forward edge of the buffer.** What you display is governed by a
   `targetOffset`, the home you are heading for.
 
@@ -61,7 +61,7 @@ Two deliberate non-states:
 | single tap | pause / resume |
 | double tap | toggle base ↔ live (any other position → base) |
 | horizontal drag | scrub within `[oldest, live]` |
-| swipe up | open settings (delay slider + presets) |
+| swipe up | open settings (delay wheel + presets) |
 | camera button | flip front / back |
 
 ### Double-tap target rule
@@ -77,6 +77,19 @@ So: double-tap = "snap between the two homes; any off-home position resets to ba
 first." Horizontal drag handles fine positioning anywhere in the range; double-tap
 handles the two quick homes. Scrubbing toward live still exists as the forward
 bound, but it is no longer the primary way to reach live.
+
+### Settings sheet
+
+Swipe up opens a settings sheet with:
+
+- **Delay** — a drum wheel that snaps to a uniform ladder: `live (0)` then `5s` steps
+  up to `240s`. No numeric input (keyboard-hostile mid-workout); the wheel plus
+  presets cover every value (FR-006).
+- **Presets** — quick-select values (Gym 60s, Archery 30s), the primary fast path
+  (FR-008).
+
+The buffer window is not shown — it is derived (`delay + 60s`, capped at 300s). Front
+mirroring is not a setting either; it is fixed by camera (see below).
 
 ## Behavioural rules
 
