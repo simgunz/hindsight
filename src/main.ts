@@ -1,4 +1,8 @@
+import '@fontsource/martian-mono/300.css'
+import '@fontsource/martian-mono/400.css'
+import '@fontsource/martian-mono/600.css'
 import './style.css'
+import { BuildOverlay } from './buildOverlay'
 import { DelayIndicator } from './delayIndicator'
 import { DelayPipeline, pickCodec } from './delayPipeline'
 import { loadDelaySeconds, saveDelaySeconds } from './delayStore'
@@ -117,6 +121,9 @@ async function startMirror(app: HTMLElement): Promise<void> {
   const indicator = new DelayIndicator()
   app.append(indicator.element)
 
+  const buildOverlay = new BuildOverlay()
+  app.append(buildOverlay.element)
+
   let warming: HTMLParagraphElement | null = document.createElement('p')
   warming.className = 'message'
   warming.textContent = 'Starting camera…'
@@ -163,9 +170,21 @@ async function startMirror(app: HTMLElement): Promise<void> {
 
   void requestWakeLock()
 
+  const drive = (): void => {
+    const state = pipeline.getDelayState()
+    buildOverlay.sync(state.targetDelayMs, state.availableMs)
+    if (buildOverlay.owning) {
+      indicator.conceal()
+    } else {
+      indicator.reveal()
+      indicator.update(state.effectiveDelayMs, state.targetDelayMs)
+    }
+    requestAnimationFrame(drive)
+  }
+  requestAnimationFrame(drive)
+
   setInterval(() => {
     const stats = pipeline.getStats()
-    indicator.update(stats.effectiveDelayMs, baseDelayMs)
     overlay?.update(stats, codec)
     if (warming && stats.displayedFps > 0) {
       warming.remove()

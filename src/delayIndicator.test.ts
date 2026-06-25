@@ -10,7 +10,7 @@ describe('formatDelayLabel', () => {
     expect(formatDelayLabel(3400)).toBe('−3s')
   })
 
-  it('renders zero at the start of the ramp', () => {
-    expect(formatDelayLabel(0)).toBe('−0s')
+  it('renders LIVE at zero delay (the live edge)', () => {
+    expect(formatDelayLabel(0)).toBe('LIVE')
   })
 })
