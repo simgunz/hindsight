@@ -76,6 +76,7 @@ export class DelayPipeline {
   private retentionWindowMs: number
   private committedDelayMs = 0
   private effectiveDelayMs = 0
+  private cursorTime = 0
 
   private lastTargetWall: number | null = null
   private seekTargetTs: number | null = null
@@ -257,13 +258,21 @@ export class DelayPipeline {
     if (oldest === undefined) return
 
     const now = performance.now()
+    this.cursorTime = this.nextCursorTime(now, oldest)
+    this.renderCursor(this.cursorTime)
+  }
+
+  private nextCursorTime(now: number, oldest: number): number {
     const available = now - oldest
     if (available >= this.targetDelayMs)
       this.committedDelayMs = this.targetDelayMs
     const effectiveDelay = Math.min(this.committedDelayMs, available)
     this.effectiveDelayMs = effectiveDelay
-    const cursorTime = now - effectiveDelay
+    return now - effectiveDelay
+  }
 
+  private renderCursor(cursorTime: number): void {
+    if (!this.decoderConfig) return
     const target = this.buffer.chunkAt(cursorTime)
     if (!target) return
     if (target.captureWall === this.lastTargetWall) return
