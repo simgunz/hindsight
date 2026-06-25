@@ -110,10 +110,6 @@ export class BuildOverlay {
     }
   }
 
-  get owning(): boolean {
-    return this.phase === 'filling'
-  }
-
   private render(targetMs: number, availableMs: number): void {
     const progress = Math.min(1, Math.max(0, availableMs / targetMs))
     this.prog.style.strokeDashoffset = String(CIRCUMFERENCE * (1 - progress))

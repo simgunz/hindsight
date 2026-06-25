@@ -6,7 +6,6 @@ export function formatDelayLabel(effectiveDelayMs: number): string {
 
 export class DelayIndicator {
   readonly element: HTMLDivElement
-  private concealed = false
 
   constructor() {
     const element = document.createElement('div')
@@ -20,20 +19,5 @@ export class DelayIndicator {
       'steady',
       effectiveDelayMs >= baseDelayMs - 250,
     )
-  }
-
-  conceal(): void {
-    if (this.concealed) return
-    this.concealed = true
-    this.element.classList.add('concealed')
-  }
-
-  reveal(): void {
-    if (!this.concealed) return
-    this.concealed = false
-    this.element.classList.remove('concealed')
-    this.element.classList.remove('reveal')
-    void this.element.offsetWidth
-    this.element.classList.add('reveal')
   }
 }

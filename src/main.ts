@@ -173,12 +173,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
   const drive = (): void => {
     const state = pipeline.getDelayState()
     buildOverlay.sync(state.targetDelayMs, state.availableMs)
-    if (buildOverlay.owning) {
-      indicator.conceal()
-    } else {
-      indicator.reveal()
-      indicator.update(state.effectiveDelayMs, state.targetDelayMs)
-    }
+    indicator.update(state.effectiveDelayMs, state.targetDelayMs)
     requestAnimationFrame(drive)
   }
   requestAnimationFrame(drive)
