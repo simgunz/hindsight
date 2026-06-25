@@ -125,13 +125,16 @@ The buffer is a fixed sliding window; pausing never grows it. While paused:
 
 - The frozen image stays on screen — it is the last frame drawn to the canvas, so
   it persists no matter how long you pause.
-- The paused position is a timestamp `T`. As new frames arrive, eviction advances
-  the oldest time forward; if `T` would fall off the back, it clamps to `oldestTime`.
-- On resume, playback continues forward from your exact spot if still buffered,
-  otherwise from the oldest available frame.
+- The paused position is a timestamp `T`. The displayed delay (`now − T`) keeps
+  rising without bound while paused — it reports the true age of the frozen frame,
+  even once that frame has evicted from the buffer.
+- On resume, the cursor clamps to `oldestTime`: playback continues forward from your
+  exact spot if `T` is still buffered, otherwise both the image and the delay jump
+  to the oldest available frame (the deepest point still resumable).
 
-A very long pause therefore only drifts the resume point to the deepest available
-offset; memory stays bounded and the picture never changes.
+A very long pause therefore lets the delay grow indefinitely against a frozen
+picture, then snaps to the deepest available offset the moment you resume; memory
+stays bounded throughout.
 
 ### Scrub bounds (FR-013)
 
