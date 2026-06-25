@@ -48,4 +48,23 @@ describe('TimedRingBuffer', () => {
     buffer.push(150, 10, 'b')
     expect(buffer.chunkAt(50)).toBe('a')
   })
+
+  it('finds the latest value at or before a time matching a predicate', () => {
+    const buffer = new TimedRingBuffer<{ key: boolean }>()
+    buffer.push(0, 10, { key: true })
+    buffer.push(33, 10, { key: false })
+    buffer.push(66, 10, { key: true })
+    buffer.push(99, 10, { key: false })
+    expect(buffer.findLatest(90, (v) => v.key)).toEqual({ key: true })
+    expect(buffer.findLatest(50, (v) => v.key)).toEqual({ key: true })
+  })
+
+  it('returns the ordered values within an inclusive time range', () => {
+    const buffer = new TimedRingBuffer<string>()
+    buffer.push(0, 10, 'a')
+    buffer.push(33, 10, 'b')
+    buffer.push(66, 10, 'c')
+    buffer.push(99, 10, 'd')
+    expect(buffer.entriesBetween(33, 66)).toEqual(['b', 'c'])
+  })
 })

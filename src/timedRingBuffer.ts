@@ -36,6 +36,26 @@ export class TimedRingBuffer<T> {
     return this.totalBytes
   }
 
+  findLatest(
+    targetTime: number,
+    predicate: (value: T) => boolean,
+  ): T | undefined {
+    for (let i = this.entries.length - 1; i >= 0; i--) {
+      const entry = this.entries[i]
+      if (entry.time <= targetTime && predicate(entry.value)) return entry.value
+    }
+    return undefined
+  }
+
+  entriesBetween(fromTime: number, toTime: number): T[] {
+    const result: T[] = []
+    for (const entry of this.entries) {
+      if (entry.time >= fromTime && entry.time <= toTime)
+        result.push(entry.value)
+    }
+    return result
+  }
+
   get oldestTime(): number | undefined {
     return this.entries[0]?.time
   }
