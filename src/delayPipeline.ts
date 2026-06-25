@@ -31,6 +31,8 @@ interface BufferedFrame {
 }
 
 const HEADROOM_MS = 60_000
+const MAX_WINDOW_MS = 300_000
+const MAX_BUFFER_BYTES = 128 * 1024 * 1024
 const FORWARD_GAP_MS = 1000
 
 const CANDIDATE_CODECS = ['avc1.42001f', 'avc1.42e01e', 'vp8', 'vp09.00.10.08']
@@ -69,6 +71,7 @@ export class DelayPipeline {
   private framesSinceKey: number
   private rafId = 0
   private targetDelayMs: number
+  private retentionWindowMs: number
 
   private lastTargetWall: number | null = null
   private seekTargetTs: number | null = null
@@ -88,8 +91,13 @@ export class DelayPipeline {
     if (!ctx) throw new Error('Canvas 2D context unavailable')
     this.ctx = ctx
     this.framesSinceKey = opts.keyFrameInterval
-    this.buffer = new TimedRingBuffer<BufferedFrame>(
+    this.retentionWindowMs = Math.min(
+      MAX_WINDOW_MS,
       opts.baseDelayMs + HEADROOM_MS,
+    )
+    this.buffer = new TimedRingBuffer<BufferedFrame>(
+      this.retentionWindowMs,
+      MAX_BUFFER_BYTES,
     )
 
     this.decoder = new VideoDecoder({
@@ -129,7 +137,11 @@ export class DelayPipeline {
 
   setBaseDelay(ms: number): void {
     this.targetDelayMs = ms
-    this.buffer.setMaxWindow(ms + HEADROOM_MS)
+    this.retentionWindowMs = Math.min(
+      MAX_WINDOW_MS,
+      Math.max(this.retentionWindowMs, ms + HEADROOM_MS),
+    )
+    this.buffer.setMaxWindow(this.retentionWindowMs)
   }
 
   encode(frame: VideoFrame): void {
