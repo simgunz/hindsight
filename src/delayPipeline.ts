@@ -294,6 +294,7 @@ export class DelayPipeline {
 
     const now = performance.now()
     this.cursorTime = this.cursorForMode(now, oldest)
+    this.effectiveDelayMs = now - this.cursorTime
     this.renderCursor(this.cursorTime)
   }
 
@@ -311,7 +312,6 @@ export class DelayPipeline {
     if (available >= this.targetOffsetMs)
       this.committedDelayMs = this.targetOffsetMs
     const effectiveDelay = Math.min(this.committedDelayMs, available)
-    this.effectiveDelayMs = effectiveDelay
     return now - effectiveDelay
   }
 
