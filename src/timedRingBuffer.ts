@@ -7,10 +7,16 @@ interface TimedEntry<T> {
 export class TimedRingBuffer<T> {
   private readonly entries: TimedEntry<T>[] = []
   private totalBytes = 0
-  private readonly maxWindowMs: number
+  private maxWindowMs: number
 
   constructor(maxWindowMs: number = Number.POSITIVE_INFINITY) {
     this.maxWindowMs = maxWindowMs
+  }
+
+  setMaxWindow(maxWindowMs: number): void {
+    this.maxWindowMs = maxWindowMs
+    const newest = this.newestTime
+    if (newest !== undefined) this.evict(newest - maxWindowMs)
   }
 
   push(time: number, bytes: number, value: T): void {

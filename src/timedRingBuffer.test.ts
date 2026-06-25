@@ -67,4 +67,13 @@ describe('TimedRingBuffer', () => {
     buffer.push(99, 10, 'd')
     expect(buffer.entriesBetween(33, 66)).toEqual(['b', 'c'])
   })
+
+  it('evicts down to the new window when it is reduced', () => {
+    const buffer = new TimedRingBuffer<string>(1000)
+    buffer.push(0, 10, 'a')
+    buffer.push(500, 10, 'b')
+    buffer.push(1000, 10, 'c')
+    buffer.setMaxWindow(200)
+    expect(buffer.size).toBe(2)
+  })
 })
