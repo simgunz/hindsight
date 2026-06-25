@@ -4,6 +4,8 @@ export interface PipelineStats {
   capturedFps: number
   displayedFps: number
   effectiveDelayMs: number
+  targetDelayMs: number
+  availableMs: number
   bufferChunks: number
   bufferBytes: number
   latencyMs: number
@@ -72,6 +74,8 @@ export class DelayPipeline {
   private rafId = 0
   private targetDelayMs: number
   private retentionWindowMs: number
+  private committedDelayMs = 0
+  private effectiveDelayMs = 0
 
   private lastTargetWall: number | null = null
   private seekTargetTs: number | null = null
@@ -153,6 +157,20 @@ export class DelayPipeline {
     this.encoder.encode(frame, { keyFrame })
   }
 
+  getDelayState(): {
+    effectiveDelayMs: number
+    targetDelayMs: number
+    availableMs: number
+  } {
+    const oldest = this.buffer.oldestTime
+    const availableMs = oldest === undefined ? 0 : performance.now() - oldest
+    return {
+      effectiveDelayMs: this.effectiveDelayMs,
+      targetDelayMs: this.targetDelayMs,
+      availableMs,
+    }
+  }
+
   getStats(): PipelineStats {
     const now = performance.now()
     const dt = (now - this.sampleTime) / 1000
@@ -169,7 +187,9 @@ export class DelayPipeline {
     return {
       capturedFps,
       displayedFps,
-      effectiveDelayMs: Math.min(this.targetDelayMs, available),
+      effectiveDelayMs: this.effectiveDelayMs,
+      targetDelayMs: this.targetDelayMs,
+      availableMs: available,
       bufferChunks: this.buffer.size,
       bufferBytes: this.buffer.bytes,
       latencyMs: this.latencyMs,
@@ -238,7 +258,10 @@ export class DelayPipeline {
 
     const now = performance.now()
     const available = now - oldest
-    const effectiveDelay = Math.min(this.targetDelayMs, available)
+    if (available >= this.targetDelayMs)
+      this.committedDelayMs = this.targetDelayMs
+    const effectiveDelay = Math.min(this.committedDelayMs, available)
+    this.effectiveDelayMs = effectiveDelay
     const cursorTime = now - effectiveDelay
 
     const target = this.buffer.chunkAt(cursorTime)
