@@ -1,10 +1,13 @@
 import './style.css'
 import { DelayIndicator } from './delayIndicator'
 import { DelayPipeline, pickCodec } from './delayPipeline'
+import { loadDelaySeconds, saveDelaySeconds } from './delayStore'
+import { DelayWheel } from './delayWheel'
 import { createFrameSource } from './frameSource'
+import { SettingsSheet } from './settingsSheet'
 import { StatsOverlay } from './stats'
 
-const BASE_DELAY_MS = 10_000
+const DEFAULT_DELAY_SECONDS = 10
 const FRAMERATE = 30
 const BITRATE = 3_000_000
 const KEY_FRAME_INTERVAL = 60
@@ -121,6 +124,9 @@ async function startMirror(app: HTMLElement): Promise<void> {
   const overlay = DEBUG ? new StatsOverlay() : null
   if (overlay) app.append(overlay.element)
 
+  let currentSeconds = loadDelaySeconds(DEFAULT_DELAY_SECONDS)
+  let baseDelayMs = currentSeconds * 1000
+
   const pipeline = new DelayPipeline({
     canvas,
     codec,
@@ -128,11 +134,25 @@ async function startMirror(app: HTMLElement): Promise<void> {
     height,
     framerate: FRAMERATE,
     bitrate: BITRATE,
-    baseDelayMs: BASE_DELAY_MS,
+    baseDelayMs,
     keyFrameInterval: KEY_FRAME_INTERVAL,
   })
   pipeline.start()
   if (DEBUG) Reflect.set(window, 'hindsightPipeline', pipeline)
+
+  const wheel = new DelayWheel((seconds) => {
+    currentSeconds = seconds
+    baseDelayMs = seconds * 1000
+    pipeline.setBaseDelay(baseDelayMs)
+    saveDelaySeconds(seconds)
+  })
+  const sheet = new SettingsSheet(wheel)
+  app.append(sheet.element)
+
+  attachOpenGesture(canvas, () => {
+    wheel.setValue(currentSeconds)
+    sheet.open()
+  })
 
   const source = createFrameSource(track)
   source.start((frame) => {
@@ -144,13 +164,31 @@ async function startMirror(app: HTMLElement): Promise<void> {
 
   setInterval(() => {
     const stats = pipeline.getStats()
-    indicator.update(stats.effectiveDelayMs, BASE_DELAY_MS)
+    indicator.update(stats.effectiveDelayMs, baseDelayMs)
     overlay?.update(stats, codec)
     if (warming && stats.displayedFps > 0) {
       warming.remove()
       warming = null
     }
   }, 250)
+}
+
+function attachOpenGesture(target: HTMLElement, onSwipeUp: () => void): void {
+  let startX = 0
+  let startY = 0
+  let tracking = false
+  target.addEventListener('pointerdown', (event) => {
+    startX = event.clientX
+    startY = event.clientY
+    tracking = true
+  })
+  target.addEventListener('pointerup', (event) => {
+    if (!tracking) return
+    tracking = false
+    const dx = event.clientX - startX
+    const dy = event.clientY - startY
+    if (dy < -60 && Math.abs(dy) > Math.abs(dx)) onSwipeUp()
+  })
 }
 
 function main(): void {
@@ -169,7 +207,7 @@ function main(): void {
   renderCard(
     app,
     'Hindsight',
-    'See yourself on a 10-second delay. The camera runs while the app is open, but nothing is ever recorded or saved.',
+    'See yourself on a delay, hands-free. The camera runs while the app is open, but nothing is ever recorded or saved.',
     { label: 'Start mirror', onClick: () => void startMirror(app) },
   )
 }
