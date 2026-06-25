@@ -150,7 +150,9 @@ export class DelayPipeline {
 
   togglePause(): boolean {
     if (this.mode === 'paused') {
-      this.targetOffsetMs = Math.max(0, performance.now() - this.cursorTime)
+      const oldest = this.buffer.oldestTime ?? this.cursorTime
+      const resumeCursor = Math.max(this.cursorTime, oldest)
+      this.targetOffsetMs = Math.max(0, performance.now() - resumeCursor)
       this.mode = 'playing'
       return false
     }
@@ -304,7 +306,7 @@ export class DelayPipeline {
   }
 
   private cursorForMode(now: number, oldest: number): number {
-    if (this.mode === 'paused') return Math.max(this.pausedCursor, oldest)
+    if (this.mode === 'paused') return this.pausedCursor
     if (this.mode === 'scrubbing') {
       const scrubTarget = this.scrubBaseTime + this.scrubDeltaMs
       return Math.min(now, Math.max(oldest, scrubTarget))
