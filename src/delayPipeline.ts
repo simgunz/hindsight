@@ -72,7 +72,8 @@ export class DelayPipeline {
   private sizeSet = false
   private framesSinceKey: number
   private rafId = 0
-  private targetDelayMs: number
+  private baseDelayMs: number
+  private targetOffsetMs: number
   private retentionWindowMs: number
   private committedDelayMs = 0
   private effectiveDelayMs = 0
@@ -93,7 +94,8 @@ export class DelayPipeline {
 
   constructor(opts: DelayPipelineOptions) {
     this.opts = opts
-    this.targetDelayMs = opts.baseDelayMs
+    this.baseDelayMs = opts.baseDelayMs
+    this.targetOffsetMs = opts.baseDelayMs
     const ctx = opts.canvas.getContext('2d')
     if (!ctx) throw new Error('Canvas 2D context unavailable')
     this.ctx = ctx
@@ -149,7 +151,8 @@ export class DelayPipeline {
   }
 
   setBaseDelay(ms: number): void {
-    this.targetDelayMs = ms
+    this.baseDelayMs = ms
+    this.targetOffsetMs = ms
     this.retentionWindowMs = Math.min(
       MAX_WINDOW_MS,
       Math.max(this.retentionWindowMs, ms + HEADROOM_MS),
@@ -168,7 +171,8 @@ export class DelayPipeline {
 
   getDelayState(): {
     effectiveDelayMs: number
-    targetDelayMs: number
+    baseDelayMs: number
+    targetOffsetMs: number
     availableMs: number
     paused: boolean
   } {
@@ -176,7 +180,8 @@ export class DelayPipeline {
     const availableMs = oldest === undefined ? 0 : performance.now() - oldest
     return {
       effectiveDelayMs: this.effectiveDelayMs,
-      targetDelayMs: this.targetDelayMs,
+      baseDelayMs: this.baseDelayMs,
+      targetOffsetMs: this.targetOffsetMs,
       availableMs,
       paused: this.paused,
     }
@@ -199,7 +204,7 @@ export class DelayPipeline {
       capturedFps,
       displayedFps,
       effectiveDelayMs: this.effectiveDelayMs,
-      targetDelayMs: this.targetDelayMs,
+      targetDelayMs: this.targetOffsetMs,
       availableMs: available,
       bufferChunks: this.buffer.size,
       bufferBytes: this.buffer.bytes,
@@ -276,8 +281,8 @@ export class DelayPipeline {
 
   private nextCursorTime(now: number, oldest: number): number {
     const available = now - oldest
-    if (available >= this.targetDelayMs)
-      this.committedDelayMs = this.targetDelayMs
+    if (available >= this.targetOffsetMs)
+      this.committedDelayMs = this.targetOffsetMs
     const effectiveDelay = Math.min(this.committedDelayMs, available)
     this.effectiveDelayMs = effectiveDelay
     return now - effectiveDelay
