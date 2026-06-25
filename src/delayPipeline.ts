@@ -7,6 +7,10 @@ export interface PipelineStats {
   bufferChunks: number
   bufferBytes: number
   latencyMs: number
+  configWidth: number
+  configHeight: number
+  sourceWidth: number
+  sourceHeight: number
 }
 
 export interface DelayPipelineOptions {
@@ -58,6 +62,9 @@ export class DelayPipeline {
   private readonly captureWall = new Map<number, number>()
   private readonly decodeWall = new Map<number, number>()
   private decoderConfig: VideoDecoderConfig | null = null
+  private encoderConfigured = false
+  private sourceWidth = 0
+  private sourceHeight = 0
   private sizeSet = false
   private framesSinceKey: number
   private rafId = 0
@@ -94,14 +101,20 @@ export class DelayPipeline {
       output: (chunk, metadata) => this.onEncoded(chunk, metadata),
       error: (error) => console.error('VideoEncoder', error),
     })
+  }
+
+  private configureEncoder(frame: VideoFrame): void {
+    this.sourceWidth = frame.displayWidth
+    this.sourceHeight = frame.displayHeight
     this.encoder.configure({
-      codec: opts.codec,
-      width: opts.width,
-      height: opts.height,
-      framerate: opts.framerate,
-      bitrate: opts.bitrate,
+      codec: this.opts.codec,
+      width: frame.displayWidth,
+      height: frame.displayHeight,
+      framerate: this.opts.framerate,
+      bitrate: this.opts.bitrate,
       latencyMode: 'realtime',
     })
+    this.encoderConfigured = true
   }
 
   start(): void {
@@ -120,6 +133,7 @@ export class DelayPipeline {
   }
 
   encode(frame: VideoFrame): void {
+    if (!this.encoderConfigured) this.configureEncoder(frame)
     this.captureWall.set(frame.timestamp, performance.now())
     this.capturedCount += 1
     const keyFrame = this.framesSinceKey >= this.opts.keyFrameInterval
@@ -147,6 +161,10 @@ export class DelayPipeline {
       bufferChunks: this.buffer.size,
       bufferBytes: this.buffer.bytes,
       latencyMs: this.latencyMs,
+      configWidth: this.opts.width,
+      configHeight: this.opts.height,
+      sourceWidth: this.sourceWidth,
+      sourceHeight: this.sourceHeight,
     }
   }
 
