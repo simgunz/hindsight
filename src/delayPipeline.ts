@@ -38,6 +38,7 @@ const HEADROOM_MS = 60_000
 const MAX_WINDOW_MS = 300_000
 const MAX_BUFFER_BYTES = 128 * 1024 * 1024
 const FORWARD_GAP_MS = 1000
+const SCRUB_DECODE_TIMEOUT_MS = 200
 
 const CANDIDATE_CODECS = ['avc1.42001f', 'avc1.42e01e', 'vp8', 'vp09.00.10.08']
 
@@ -84,6 +85,8 @@ export class DelayPipeline {
   private pausedCursor = 0
   private scrubBaseTime = 0
   private scrubDeltaMs = 0
+  private scrubPending = false
+  private scrubPendingAt = 0
 
   private lastTargetWall: number | null = null
   private seekTargetTs: number | null = null
@@ -165,6 +168,7 @@ export class DelayPipeline {
     this.mode = 'scrubbing'
     this.scrubBaseTime = this.cursorTime
     this.scrubDeltaMs = 0
+    this.scrubPending = false
   }
 
   scrubBy(deltaMs: number): void {
@@ -174,6 +178,7 @@ export class DelayPipeline {
   endScrub(): void {
     if (this.mode !== 'scrubbing') return
     this.mode = 'playing'
+    this.scrubPending = false
     this.targetOffsetMs = Math.max(0, performance.now() - this.cursorTime)
   }
 
@@ -268,6 +273,7 @@ export class DelayPipeline {
         return
       }
       this.seekTargetTs = null
+      this.scrubPending = false
     }
     const wall = this.decodeWall.get(frame.timestamp)
     if (wall !== undefined) {
@@ -302,7 +308,8 @@ export class DelayPipeline {
     const now = performance.now()
     this.cursorTime = this.cursorForMode(now, oldest)
     this.effectiveDelayMs = now - this.cursorTime
-    if (this.mode !== 'paused') this.renderCursor(this.cursorTime)
+    if (this.mode === 'scrubbing') this.renderScrub(this.cursorTime, now)
+    else if (this.mode !== 'paused') this.renderCursor(this.cursorTime)
   }
 
   private cursorForMode(now: number, oldest: number): number {
@@ -352,6 +359,47 @@ export class DelayPipeline {
       this.decodeRun(run)
     }
 
+    this.decodeWall.set(target.chunk.timestamp, target.captureWall)
+    this.lastTargetWall = target.captureWall
+  }
+
+  private renderScrub(cursorTime: number, now: number): void {
+    if (!this.decoderConfig) return
+    if (
+      this.scrubPending &&
+      now - this.scrubPendingAt < SCRUB_DECODE_TIMEOUT_MS
+    )
+      return
+    const target = this.buffer.chunkAt(cursorTime)
+    if (!target) return
+    if (target.captureWall === this.lastTargetWall) return
+
+    const last = this.lastTargetWall
+    const forwardContiguous =
+      last !== null &&
+      target.captureWall > last &&
+      target.captureWall - last <= FORWARD_GAP_MS
+    if (forwardContiguous) {
+      this.seekTargetTs = target.chunk.timestamp
+      this.decodeRun(
+        this.buffer.entriesBetween(last + 0.001, target.captureWall),
+      )
+    } else {
+      const keyframe = this.buffer.findLatest(
+        target.captureWall,
+        (value) => value.keyframe,
+      )
+      if (!keyframe) return
+      this.decoder.reset()
+      this.decoder.configure(this.decoderConfig)
+      this.seekTargetTs = target.chunk.timestamp
+      this.decodeRun(
+        this.buffer.entriesBetween(keyframe.captureWall, target.captureWall),
+      )
+    }
+
+    this.scrubPending = true
+    this.scrubPendingAt = now
     this.decodeWall.set(target.chunk.timestamp, target.captureWall)
     this.lastTargetWall = target.captureWall
   }
