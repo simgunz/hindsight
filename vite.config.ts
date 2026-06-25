@@ -7,6 +7,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
+        id: '/',
         name: 'Hindsight',
         short_name: 'Hindsight',
         description: 'Hands-free delayed video mirror',
@@ -14,6 +15,7 @@ export default defineConfig({
         background_color: '#000000',
         display: 'standalone',
         start_url: '/',
+        categories: ['health', 'fitness'],
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
