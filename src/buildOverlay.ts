@@ -99,11 +99,8 @@ export class BuildOverlay {
 
     const remaining = targetMs - availableMs
     if (this.phase === 'filling') {
-      if (remaining <= 0) {
-        this.lock()
-        return
-      }
       this.render(targetMs, availableMs)
+      if (remaining <= 0) this.lock()
     } else if (targetMs > 0 && remaining > ENTER_THRESHOLD_MS) {
       this.enter()
       this.render(targetMs, availableMs)
