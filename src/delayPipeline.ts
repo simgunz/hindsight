@@ -32,6 +32,8 @@ interface BufferedFrame {
   keyframe: boolean
 }
 
+type PlaybackMode = 'playing' | 'paused' | 'scrubbing'
+
 const HEADROOM_MS = 60_000
 const MAX_WINDOW_MS = 300_000
 const MAX_BUFFER_BYTES = 128 * 1024 * 1024
@@ -78,7 +80,7 @@ export class DelayPipeline {
   private committedDelayMs = 0
   private effectiveDelayMs = 0
   private cursorTime = 0
-  private paused = false
+  private mode: PlaybackMode = 'playing'
   private pausedCursor = 0
 
   private lastTargetWall: number | null = null
@@ -145,9 +147,9 @@ export class DelayPipeline {
   }
 
   togglePause(): boolean {
-    this.paused = !this.paused
-    if (this.paused) this.pausedCursor = this.cursorTime
-    return this.paused
+    this.mode = this.mode === 'paused' ? 'playing' : 'paused'
+    if (this.mode === 'paused') this.pausedCursor = this.cursorTime
+    return this.mode === 'paused'
   }
 
   setBaseDelay(ms: number): void {
@@ -183,7 +185,7 @@ export class DelayPipeline {
       baseDelayMs: this.baseDelayMs,
       targetOffsetMs: this.targetOffsetMs,
       availableMs,
-      paused: this.paused,
+      paused: this.mode === 'paused',
     }
   }
 
@@ -273,9 +275,10 @@ export class DelayPipeline {
     if (oldest === undefined) return
 
     const now = performance.now()
-    this.cursorTime = this.paused
-      ? Math.max(this.pausedCursor, oldest)
-      : this.nextCursorTime(now, oldest)
+    this.cursorTime =
+      this.mode === 'paused'
+        ? Math.max(this.pausedCursor, oldest)
+        : this.nextCursorTime(now, oldest)
     this.renderCursor(this.cursorTime)
   }
 
