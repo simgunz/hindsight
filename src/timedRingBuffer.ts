@@ -8,25 +8,35 @@ export class TimedRingBuffer<T> {
   private readonly entries: TimedEntry<T>[] = []
   private totalBytes = 0
   private maxWindowMs: number
+  private maxBytes: number
 
-  constructor(maxWindowMs: number = Number.POSITIVE_INFINITY) {
+  constructor(
+    maxWindowMs: number = Number.POSITIVE_INFINITY,
+    maxBytes: number = Number.POSITIVE_INFINITY,
+  ) {
     this.maxWindowMs = maxWindowMs
+    this.maxBytes = maxBytes
   }
 
   setMaxWindow(maxWindowMs: number): void {
     this.maxWindowMs = maxWindowMs
-    const newest = this.newestTime
-    if (newest !== undefined) this.evict(newest - maxWindowMs)
+    this.evict()
   }
 
   push(time: number, bytes: number, value: T): void {
     this.entries.push({ time, bytes, value })
     this.totalBytes += bytes
-    this.evict(time - this.maxWindowMs)
+    this.evict()
   }
 
-  private evict(cutoff: number): void {
-    while (this.entries.length > 1 && this.entries[1].time <= cutoff) {
+  private evict(): void {
+    const newest = this.entries[this.entries.length - 1]?.time
+    if (newest === undefined) return
+    const cutoff = newest - this.maxWindowMs
+    while (
+      this.entries.length > 1 &&
+      (this.entries[1].time <= cutoff || this.totalBytes > this.maxBytes)
+    ) {
       const dropped = this.entries.shift()
       if (dropped) {
         this.totalBytes -= dropped.bytes

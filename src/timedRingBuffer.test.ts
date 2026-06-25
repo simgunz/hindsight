@@ -76,4 +76,13 @@ describe('TimedRingBuffer', () => {
     buffer.setMaxWindow(200)
     expect(buffer.size).toBe(2)
   })
+
+  it('evicts the oldest entries when total bytes exceed the budget', () => {
+    const buffer = new TimedRingBuffer<string>(Number.POSITIVE_INFINITY, 250)
+    buffer.push(0, 100, 'a')
+    buffer.push(33, 100, 'b')
+    buffer.push(66, 100, 'c')
+    expect(buffer.bytes).toBe(200)
+    expect(buffer.oldestTime).toBe(33)
+  })
 })
