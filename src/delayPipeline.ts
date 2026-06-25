@@ -82,6 +82,8 @@ export class DelayPipeline {
   private cursorTime = 0
   private mode: PlaybackMode = 'playing'
   private pausedCursor = 0
+  private scrubBaseTime = 0
+  private scrubDeltaMs = 0
 
   private lastTargetWall: number | null = null
   private seekTargetTs: number | null = null
@@ -150,6 +152,22 @@ export class DelayPipeline {
     this.mode = this.mode === 'paused' ? 'playing' : 'paused'
     if (this.mode === 'paused') this.pausedCursor = this.cursorTime
     return this.mode === 'paused'
+  }
+
+  beginScrub(): void {
+    this.mode = 'scrubbing'
+    this.scrubBaseTime = this.cursorTime
+    this.scrubDeltaMs = 0
+  }
+
+  scrubBy(deltaMs: number): void {
+    this.scrubDeltaMs = deltaMs
+  }
+
+  endScrub(): void {
+    if (this.mode !== 'scrubbing') return
+    this.mode = 'playing'
+    this.targetOffsetMs = Math.max(0, performance.now() - this.cursorTime)
   }
 
   setBaseDelay(ms: number): void {
@@ -275,11 +293,17 @@ export class DelayPipeline {
     if (oldest === undefined) return
 
     const now = performance.now()
-    this.cursorTime =
-      this.mode === 'paused'
-        ? Math.max(this.pausedCursor, oldest)
-        : this.nextCursorTime(now, oldest)
+    this.cursorTime = this.cursorForMode(now, oldest)
     this.renderCursor(this.cursorTime)
+  }
+
+  private cursorForMode(now: number, oldest: number): number {
+    if (this.mode === 'paused') return Math.max(this.pausedCursor, oldest)
+    if (this.mode === 'scrubbing') {
+      const scrubTarget = this.scrubBaseTime + this.scrubDeltaMs
+      return Math.min(now, Math.max(oldest, scrubTarget))
+    }
+    return this.nextCursorTime(now, oldest)
   }
 
   private nextCursorTime(now: number, oldest: number): number {

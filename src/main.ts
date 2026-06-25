@@ -169,6 +169,12 @@ async function startMirror(app: HTMLElement): Promise<void> {
     pipeline.togglePause()
   })
 
+  attachScrub(canvas, {
+    begin: () => pipeline.beginScrub(),
+    move: (deltaMs) => pipeline.scrubBy(deltaMs),
+    end: () => pipeline.endScrub(),
+  })
+
   const source = createFrameSource(track)
   source.start((frame) => {
     pipeline.encode(frame)
@@ -197,6 +203,50 @@ async function startMirror(app: HTMLElement): Promise<void> {
 
 const TAP_MOVE_PX = 10
 const TAP_MAX_MS = 300
+const SCRUB_ACTIVATE_PX = 12
+const SCRUB_SECONDS_PER_WIDTH = 20
+
+interface ScrubHandlers {
+  begin: () => void
+  move: (deltaMs: number) => void
+  end: () => void
+}
+
+function attachScrub(target: HTMLElement, handlers: ScrubHandlers): void {
+  let active = false
+  let scrubbing = false
+  let startX = 0
+  let startY = 0
+  target.addEventListener('pointerdown', (event) => {
+    active = true
+    scrubbing = false
+    startX = event.clientX
+    startY = event.clientY
+  })
+  target.addEventListener('pointermove', (event) => {
+    if (!active) return
+    const dx = event.clientX - startX
+    const dy = event.clientY - startY
+    if (!scrubbing) {
+      if (Math.hypot(dx, dy) < SCRUB_ACTIVATE_PX) return
+      if (Math.abs(dx) <= Math.abs(dy)) {
+        active = false
+        return
+      }
+      scrubbing = true
+      handlers.begin()
+    }
+    const msPerPx = (SCRUB_SECONDS_PER_WIDTH * 1000) / window.innerWidth
+    handlers.move(dx * msPerPx)
+  })
+  const finish = (): void => {
+    if (scrubbing) handlers.end()
+    active = false
+    scrubbing = false
+  }
+  target.addEventListener('pointerup', finish)
+  target.addEventListener('pointercancel', finish)
+}
 
 function attachTap(target: HTMLElement, onTap: () => void): void {
   let startX = 0
