@@ -18,6 +18,7 @@ const BITRATE = 3_000_000
 const KEY_FRAME_INTERVAL = 60
 
 const DEBUG = new URLSearchParams(window.location.search).has('debug')
+const STARTED_KEY = 'hindsight.cameraStarted'
 
 interface CardAction {
   label: string
@@ -100,6 +101,8 @@ async function startMirror(app: HTMLElement): Promise<void> {
     renderCard(app, 'No camera', 'No camera track is available on this device.')
     return
   }
+
+  localStorage.setItem(STARTED_KEY, '1')
 
   const settings = track.getSettings()
   const width = settings.width ?? 1280
@@ -206,6 +209,47 @@ function attachOpenGesture(target: HTMLElement, onSwipeUp: () => void): void {
   })
 }
 
+async function cameraPermissionState(): Promise<
+  'granted' | 'prompt' | 'denied' | 'unknown'
+> {
+  if (!navigator.permissions?.query) return 'unknown'
+  try {
+    const status = await navigator.permissions.query({
+      name: 'camera' as PermissionName,
+    })
+    return status.state
+  } catch {
+    return 'unknown'
+  }
+}
+
+async function boot(app: HTMLElement): Promise<void> {
+  const state = await cameraPermissionState()
+  const startedBefore = localStorage.getItem(STARTED_KEY) === '1'
+
+  if (state === 'granted' || (state === 'unknown' && startedBefore)) {
+    await startMirror(app)
+    return
+  }
+
+  if (state === 'denied') {
+    renderCard(
+      app,
+      'Camera blocked',
+      'Hindsight needs the camera to mirror you. Enable camera access for this site in your browser settings, then reload.',
+      { label: 'Reload', onClick: () => window.location.reload() },
+    )
+    return
+  }
+
+  renderCard(
+    app,
+    'Hindsight',
+    'See yourself on a delay, hands-free. Video stays on your device, in memory only. Nothing is saved or sent anywhere, and it clears the moment you close the app.',
+    { label: 'Start mirror', onClick: () => void startMirror(app) },
+  )
+}
+
 function main(): void {
   registerPwa()
 
@@ -221,12 +265,7 @@ function main(): void {
     return
   }
 
-  renderCard(
-    app,
-    'Hindsight',
-    'See yourself on a delay, hands-free. The camera runs while the app is open, but nothing is ever recorded or saved.',
-    { label: 'Start mirror', onClick: () => void startMirror(app) },
-  )
+  void boot(app)
 }
 
 main()
