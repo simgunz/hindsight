@@ -1,7 +1,12 @@
-export function formatDelayLabel(effectiveDelayMs: number): string {
+const PAUSE_GLYPH = '⏸'
+
+export function formatDelayLabel(
+  effectiveDelayMs: number,
+  paused = false,
+): string {
   const seconds = Math.round(effectiveDelayMs / 1000)
-  if (seconds === 0) return 'LIVE'
-  return `−${seconds}s`
+  const label = seconds === 0 ? 'LIVE' : `−${seconds}s`
+  return paused ? `${PAUSE_GLYPH} ${label}` : label
 }
 
 export class DelayIndicator {
@@ -13,11 +18,11 @@ export class DelayIndicator {
     this.element = element
   }
 
-  update(effectiveDelayMs: number, baseDelayMs: number): void {
-    this.element.textContent = formatDelayLabel(effectiveDelayMs)
+  update(effectiveDelayMs: number, baseDelayMs: number, paused = false): void {
+    this.element.textContent = formatDelayLabel(effectiveDelayMs, paused)
     this.element.classList.toggle(
       'steady',
-      effectiveDelayMs >= baseDelayMs - 250,
+      !paused && effectiveDelayMs >= baseDelayMs - 250,
     )
   }
 }

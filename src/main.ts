@@ -165,6 +165,10 @@ async function startMirror(app: HTMLElement): Promise<void> {
     sheet.open()
   })
 
+  attachTap(canvas, () => {
+    pipeline.togglePause()
+  })
+
   const source = createFrameSource(track)
   source.start((frame) => {
     pipeline.encode(frame)
@@ -176,7 +180,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
   const drive = (): void => {
     const state = pipeline.getDelayState()
     buildOverlay.sync(state.targetDelayMs, state.availableMs)
-    indicator.update(state.effectiveDelayMs, state.targetDelayMs)
+    indicator.update(state.effectiveDelayMs, state.targetDelayMs, state.paused)
     requestAnimationFrame(drive)
   }
   requestAnimationFrame(drive)
@@ -189,6 +193,30 @@ async function startMirror(app: HTMLElement): Promise<void> {
       warming = null
     }
   }, 250)
+}
+
+const TAP_MOVE_PX = 10
+const TAP_MAX_MS = 300
+
+function attachTap(target: HTMLElement, onTap: () => void): void {
+  let startX = 0
+  let startY = 0
+  let startT = 0
+  let tracking = false
+  target.addEventListener('pointerdown', (event) => {
+    startX = event.clientX
+    startY = event.clientY
+    startT = event.timeStamp
+    tracking = true
+  })
+  target.addEventListener('pointerup', (event) => {
+    if (!tracking) return
+    tracking = false
+    const dx = event.clientX - startX
+    const dy = event.clientY - startY
+    const dt = event.timeStamp - startT
+    if (Math.hypot(dx, dy) <= TAP_MOVE_PX && dt <= TAP_MAX_MS) onTap()
+  })
 }
 
 function attachOpenGesture(target: HTMLElement, onSwipeUp: () => void): void {

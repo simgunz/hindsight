@@ -77,6 +77,8 @@ export class DelayPipeline {
   private committedDelayMs = 0
   private effectiveDelayMs = 0
   private cursorTime = 0
+  private paused = false
+  private pausedCursor = 0
 
   private lastTargetWall: number | null = null
   private seekTargetTs: number | null = null
@@ -140,6 +142,12 @@ export class DelayPipeline {
     this.decoder.close()
   }
 
+  togglePause(): boolean {
+    this.paused = !this.paused
+    if (this.paused) this.pausedCursor = this.cursorTime
+    return this.paused
+  }
+
   setBaseDelay(ms: number): void {
     this.targetDelayMs = ms
     this.retentionWindowMs = Math.min(
@@ -162,6 +170,7 @@ export class DelayPipeline {
     effectiveDelayMs: number
     targetDelayMs: number
     availableMs: number
+    paused: boolean
   } {
     const oldest = this.buffer.oldestTime
     const availableMs = oldest === undefined ? 0 : performance.now() - oldest
@@ -169,6 +178,7 @@ export class DelayPipeline {
       effectiveDelayMs: this.effectiveDelayMs,
       targetDelayMs: this.targetDelayMs,
       availableMs,
+      paused: this.paused,
     }
   }
 
@@ -258,7 +268,9 @@ export class DelayPipeline {
     if (oldest === undefined) return
 
     const now = performance.now()
-    this.cursorTime = this.nextCursorTime(now, oldest)
+    this.cursorTime = this.paused
+      ? Math.max(this.pausedCursor, oldest)
+      : this.nextCursorTime(now, oldest)
     this.renderCursor(this.cursorTime)
   }
 
