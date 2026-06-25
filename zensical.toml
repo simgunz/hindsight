@@ -36,6 +36,7 @@ nav = [
     { "0008 localStorage" = "decisions/0008-localstorage.md" },
     { "0009 Delayed playback buffer" = "decisions/0009-delayed-playback-buffer.md" },
     { "0010 Interaction model" = "decisions/0010-orthogonal-interaction-model.md" },
+    { "0011 Seek-based playback" = "decisions/0011-seek-based-playback.md" },
   ] },
   { "Open Questions" = "open-questions.md" },
 ]

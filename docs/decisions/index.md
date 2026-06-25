@@ -23,6 +23,7 @@ gets its own file (`NNNN-title.md`) with a `status` of `proposed`, `approved`,
 | [0008](0008-localstorage.md) | localStorage for settings persistence | approved |
 | [0009](0009-delayed-playback-buffer.md) | Delayed playback via WebCodecs | approved |
 | [0010](0010-orthogonal-interaction-model.md) | Orthogonal camera/delay interaction model | approved |
+| [0011](0011-seek-based-playback.md) | Random-access playback via keyframe seek | approved |
 
 ## Stack summary
 
