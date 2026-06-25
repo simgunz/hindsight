@@ -4,6 +4,7 @@ import { DelayPipeline, pickCodec } from './delayPipeline'
 import { loadDelaySeconds, saveDelaySeconds } from './delayStore'
 import { DelayWheel } from './delayWheel'
 import { createFrameSource } from './frameSource'
+import { registerPwa } from './pwa'
 import { SettingsSheet } from './settingsSheet'
 import { StatsOverlay } from './stats'
 
@@ -192,6 +193,8 @@ function attachOpenGesture(target: HTMLElement, onSwipeUp: () => void): void {
 }
 
 function main(): void {
+  registerPwa()
+
   const app = document.querySelector<HTMLDivElement>('#app')
   if (!app) throw new Error('Missing #app root element')
 
