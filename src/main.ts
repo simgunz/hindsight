@@ -132,6 +132,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
     keyFrameInterval: KEY_FRAME_INTERVAL,
   })
   pipeline.start()
+  if (DEBUG) Reflect.set(window, 'hindsightPipeline', pipeline)
 
   const source = createFrameSource(track)
   source.start((frame) => {

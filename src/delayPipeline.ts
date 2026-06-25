@@ -1,3 +1,5 @@
+import { TimedRingBuffer } from './timedRingBuffer'
+
 export interface PipelineStats {
   capturedFps: number
   displayedFps: number
@@ -18,10 +20,14 @@ export interface DelayPipelineOptions {
   keyFrameInterval: number
 }
 
-interface BufferedChunk {
+interface BufferedFrame {
   chunk: EncodedVideoChunk
   captureWall: number
+  keyframe: boolean
 }
+
+const HEADROOM_MS = 60_000
+const FORWARD_GAP_MS = 1000
 
 const CANDIDATE_CODECS = ['avc1.42001f', 'avc1.42e01e', 'vp8', 'vp09.00.10.08']
 
@@ -48,14 +54,17 @@ export class DelayPipeline {
   private readonly ctx: CanvasRenderingContext2D
   private readonly encoder: VideoEncoder
   private readonly decoder: VideoDecoder
-  private readonly buffer: BufferedChunk[] = []
+  private readonly buffer: TimedRingBuffer<BufferedFrame>
   private readonly captureWall = new Map<number, number>()
   private readonly decodeWall = new Map<number, number>()
-  private decoderReady = false
+  private decoderConfig: VideoDecoderConfig | null = null
   private sizeSet = false
   private framesSinceKey: number
-  private readonly startTime = performance.now()
   private rafId = 0
+  private targetDelayMs: number
+
+  private lastTargetWall: number | null = null
+  private seekTargetTs: number | null = null
 
   private capturedCount = 0
   private displayedCount = 0
@@ -67,10 +76,14 @@ export class DelayPipeline {
 
   constructor(opts: DelayPipelineOptions) {
     this.opts = opts
+    this.targetDelayMs = opts.baseDelayMs
     const ctx = opts.canvas.getContext('2d')
     if (!ctx) throw new Error('Canvas 2D context unavailable')
     this.ctx = ctx
     this.framesSinceKey = opts.keyFrameInterval
+    this.buffer = new TimedRingBuffer<BufferedFrame>(
+      opts.baseDelayMs + HEADROOM_MS,
+    )
 
     this.decoder = new VideoDecoder({
       output: (frame) => this.onDecoded(frame),
@@ -101,6 +114,11 @@ export class DelayPipeline {
     this.decoder.close()
   }
 
+  setBaseDelay(ms: number): void {
+    this.targetDelayMs = ms
+    this.buffer.setMaxWindow(ms + HEADROOM_MS)
+  }
+
   encode(frame: VideoFrame): void {
     this.captureWall.set(frame.timestamp, performance.now())
     this.capturedCount += 1
@@ -119,14 +137,15 @@ export class DelayPipeline {
     this.sampleTime = now
     this.sampleCaptured = this.capturedCount
     this.sampleDisplayed = this.displayedCount
-    let bytes = 0
-    for (const item of this.buffer) bytes += item.chunk.byteLength
+
+    const oldest = this.buffer.oldestTime
+    const available = oldest === undefined ? 0 : now - oldest
     return {
       capturedFps,
       displayedFps,
-      effectiveDelayMs: Math.min(this.opts.baseDelayMs, now - this.startTime),
-      bufferChunks: this.buffer.length,
-      bufferBytes: bytes,
+      effectiveDelayMs: Math.min(this.targetDelayMs, available),
+      bufferChunks: this.buffer.size,
+      bufferBytes: this.buffer.bytes,
       latencyMs: this.latencyMs,
     }
   }
@@ -135,17 +154,28 @@ export class DelayPipeline {
     chunk: EncodedVideoChunk,
     metadata?: EncodedVideoChunkMetadata,
   ): void {
-    if (!this.decoderReady && metadata?.decoderConfig) {
-      this.decoder.configure(metadata.decoderConfig)
-      this.decoderReady = true
+    if (!this.decoderConfig && metadata?.decoderConfig) {
+      this.decoderConfig = metadata.decoderConfig
+      this.decoder.configure(this.decoderConfig)
     }
     const captureWall =
       this.captureWall.get(chunk.timestamp) ?? performance.now()
     this.captureWall.delete(chunk.timestamp)
-    this.buffer.push({ chunk, captureWall })
+    this.buffer.push(captureWall, chunk.byteLength, {
+      chunk,
+      captureWall,
+      keyframe: chunk.type === 'key',
+    })
   }
 
   private onDecoded(frame: VideoFrame): void {
+    if (this.seekTargetTs !== null) {
+      if (frame.timestamp < this.seekTargetTs) {
+        frame.close()
+        return
+      }
+      this.seekTargetTs = null
+    }
     const wall = this.decodeWall.get(frame.timestamp)
     if (wall !== undefined) {
       this.latencyMs = performance.now() - wall
@@ -167,21 +197,59 @@ export class DelayPipeline {
   }
 
   private readonly feed = (): void => {
-    if (this.decoderReady) {
-      const now = performance.now()
-      const effDelay = Math.min(this.opts.baseDelayMs, now - this.startTime)
-      let head = this.buffer[0]
-      while (head && now - head.captureWall >= effDelay) {
-        this.buffer.shift()
-        this.decodeWall.set(head.chunk.timestamp, head.captureWall)
-        try {
-          this.decoder.decode(head.chunk)
-        } catch (error) {
-          console.error('decode', error)
-        }
-        head = this.buffer[0]
+    this.advance()
+    this.rafId = requestAnimationFrame(this.feed)
+  }
+
+  private advance(): void {
+    if (!this.decoderConfig) return
+    const oldest = this.buffer.oldestTime
+    if (oldest === undefined) return
+
+    const now = performance.now()
+    const available = now - oldest
+    const effectiveDelay = Math.min(this.targetDelayMs, available)
+    const cursorTime = now - effectiveDelay
+
+    const target = this.buffer.chunkAt(cursorTime)
+    if (!target) return
+    if (target.captureWall === this.lastTargetWall) return
+
+    const last = this.lastTargetWall
+    if (
+      last !== null &&
+      target.captureWall > last &&
+      target.captureWall - last <= FORWARD_GAP_MS
+    ) {
+      const run = this.buffer.entriesBetween(last + 0.001, target.captureWall)
+      this.decodeRun(run)
+    } else {
+      const keyframe = this.buffer.findLatest(
+        target.captureWall,
+        (value) => value.keyframe,
+      )
+      if (!keyframe) return
+      this.decoder.reset()
+      this.decoder.configure(this.decoderConfig)
+      this.seekTargetTs = target.chunk.timestamp
+      const run = this.buffer.entriesBetween(
+        keyframe.captureWall,
+        target.captureWall,
+      )
+      this.decodeRun(run)
+    }
+
+    this.decodeWall.set(target.chunk.timestamp, target.captureWall)
+    this.lastTargetWall = target.captureWall
+  }
+
+  private decodeRun(run: BufferedFrame[]): void {
+    for (const frame of run) {
+      try {
+        this.decoder.decode(frame.chunk)
+      } catch (error) {
+        console.error('decode', error)
       }
     }
-    this.rafId = requestAnimationFrame(this.feed)
   }
 }
