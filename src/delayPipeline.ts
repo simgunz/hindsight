@@ -207,6 +207,7 @@ export class DelayPipeline {
     targetOffsetMs: number
     availableMs: number
     paused: boolean
+    scrubbing: boolean
   } {
     const oldest = this.buffer.oldestTime
     const availableMs = oldest === undefined ? 0 : performance.now() - oldest
@@ -216,6 +217,7 @@ export class DelayPipeline {
       targetOffsetMs: this.targetOffsetMs,
       availableMs,
       paused: this.mode === 'paused',
+      scrubbing: this.mode === 'scrubbing',
     }
   }
 

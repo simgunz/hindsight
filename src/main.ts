@@ -9,6 +9,7 @@ import { loadDelaySeconds, saveDelaySeconds } from './delayStore'
 import { DelayWheel } from './delayWheel'
 import { createFrameSource } from './frameSource'
 import { registerPwa } from './pwa'
+import { SeekBar } from './seekBar'
 import { SettingsSheet } from './settingsSheet'
 import { StatsOverlay } from './stats'
 
@@ -127,6 +128,9 @@ async function startMirror(app: HTMLElement): Promise<void> {
   const buildOverlay = new BuildOverlay()
   app.append(buildOverlay.element)
 
+  const seekBar = new SeekBar()
+  app.append(seekBar.element)
+
   let warming: HTMLParagraphElement | null = document.createElement('p')
   warming.className = 'message'
   warming.textContent = 'Starting camera…'
@@ -187,6 +191,12 @@ async function startMirror(app: HTMLElement): Promise<void> {
     const state = pipeline.getDelayState()
     buildOverlay.sync(state.baseDelayMs, state.availableMs)
     indicator.update(state.effectiveDelayMs, state.baseDelayMs, state.paused)
+    seekBar.sync(
+      state.scrubbing,
+      state.effectiveDelayMs,
+      state.baseDelayMs,
+      state.availableMs,
+    )
     requestAnimationFrame(drive)
   }
   requestAnimationFrame(drive)
