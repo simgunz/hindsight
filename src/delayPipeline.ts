@@ -217,6 +217,7 @@ export class DelayPipeline {
     availableMs: number
     paused: boolean
     scrubbing: boolean
+    hasFrame: boolean
   } {
     const oldest = this.buffer.oldestTime
     const availableMs = oldest === undefined ? 0 : performance.now() - oldest
@@ -227,6 +228,7 @@ export class DelayPipeline {
       availableMs,
       paused: this.mode === 'paused',
       scrubbing: this.mode === 'scrubbing',
+      hasFrame: this.displayedCount > 0,
     }
   }
 
