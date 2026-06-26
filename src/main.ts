@@ -191,7 +191,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
 
   const drive = (): void => {
     const state = pipeline.getDelayState()
-    buildOverlay.sync(state.baseDelayMs, state.availableMs)
+    buildOverlay.sync(state.targetOffsetMs, state.availableMs)
     indicator.update(state.effectiveDelayMs, state.baseDelayMs, state.paused)
     seekBar.sync(
       state.scrubbing,
