@@ -169,9 +169,11 @@ async function startMirror(app: HTMLElement): Promise<void> {
     sheet.open()
   })
 
-  attachTap(canvas, () => {
-    pipeline.togglePause()
-  })
+  attachTaps(
+    canvas,
+    () => pipeline.togglePause(),
+    () => pipeline.toggleHome(),
+  )
 
   attachScrub(canvas, {
     begin: () => pipeline.beginScrub(),
@@ -213,6 +215,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
 
 const TAP_MOVE_PX = 10
 const TAP_MAX_MS = 300
+const DOUBLE_TAP_MS = 280
 const SCRUB_ACTIVATE_PX = 12
 const SCRUB_SECONDS_PER_WIDTH = 20
 
@@ -258,11 +261,17 @@ function attachScrub(target: HTMLElement, handlers: ScrubHandlers): void {
   target.addEventListener('pointercancel', finish)
 }
 
-function attachTap(target: HTMLElement, onTap: () => void): void {
+function attachTaps(
+  target: HTMLElement,
+  onSingle: () => void,
+  onDouble: () => void,
+): void {
   let startX = 0
   let startY = 0
   let startT = 0
   let tracking = false
+  let lastTapAt = 0
+  let pending = 0
   target.addEventListener('pointerdown', (event) => {
     startX = event.clientX
     startY = event.clientY
@@ -275,7 +284,19 @@ function attachTap(target: HTMLElement, onTap: () => void): void {
     const dx = event.clientX - startX
     const dy = event.clientY - startY
     const dt = event.timeStamp - startT
-    if (Math.hypot(dx, dy) <= TAP_MOVE_PX && dt <= TAP_MAX_MS) onTap()
+    if (Math.hypot(dx, dy) > TAP_MOVE_PX || dt > TAP_MAX_MS) return
+    const tapAt = event.timeStamp
+    if (tapAt - lastTapAt <= DOUBLE_TAP_MS) {
+      window.clearTimeout(pending)
+      lastTapAt = 0
+      onDouble()
+    } else {
+      lastTapAt = tapAt
+      pending = window.setTimeout(() => {
+        lastTapAt = 0
+        onSingle()
+      }, DOUBLE_TAP_MS)
+    }
   })
 }
 

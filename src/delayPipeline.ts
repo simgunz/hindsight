@@ -39,6 +39,7 @@ const MAX_WINDOW_MS = 300_000
 const MAX_BUFFER_BYTES = 128 * 1024 * 1024
 const FORWARD_GAP_MS = 1000
 const SCRUB_DECODE_TIMEOUT_MS = 200
+const HOME_EPS_MS = 250
 
 const CANDIDATE_CODECS = ['avc1.42001f', 'avc1.42e01e', 'vp8', 'vp09.00.10.08']
 
@@ -180,6 +181,14 @@ export class DelayPipeline {
     this.mode = 'playing'
     this.scrubPending = false
     this.targetOffsetMs = Math.max(0, performance.now() - this.cursorTime)
+  }
+
+  toggleHome(): void {
+    const atBase =
+      this.mode === 'playing' &&
+      Math.abs(this.targetOffsetMs - this.baseDelayMs) < HOME_EPS_MS
+    this.mode = 'playing'
+    this.targetOffsetMs = atBase ? 0 : this.baseDelayMs
   }
 
   setBaseDelay(ms: number): void {
