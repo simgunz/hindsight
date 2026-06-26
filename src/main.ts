@@ -191,7 +191,13 @@ async function startMirror(app: HTMLElement): Promise<void> {
 
   const drive = (): void => {
     const state = pipeline.getDelayState()
-    buildOverlay.sync(state.targetOffsetMs, state.availableMs)
+    if (state.hasFrame && warming) {
+      warming.remove()
+      warming = null
+    }
+    indicator.element.hidden = !state.hasFrame
+    if (state.hasFrame)
+      buildOverlay.sync(state.targetOffsetMs, state.availableMs)
     indicator.update(state.effectiveDelayMs, state.baseDelayMs, state.paused)
     seekBar.sync(
       state.scrubbing,
@@ -206,10 +212,6 @@ async function startMirror(app: HTMLElement): Promise<void> {
   setInterval(() => {
     const stats = pipeline.getStats()
     overlay?.update(stats, codec)
-    if (warming && stats.displayedFps > 0) {
-      warming.remove()
-      warming = null
-    }
   }, 250)
 }
 
