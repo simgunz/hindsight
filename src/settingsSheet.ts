@@ -58,10 +58,12 @@ export class SettingsSheet {
 
   open(): void {
     this.element.classList.add('open')
+    document.body.classList.add('sheet-open')
   }
 
   close(): void {
     this.element.classList.remove('open')
+    document.body.classList.remove('sheet-open')
   }
 
   get isOpen(): boolean {
