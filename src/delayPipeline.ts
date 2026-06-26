@@ -185,13 +185,14 @@ export class DelayPipeline {
     this.targetOffsetMs = Math.max(0, performance.now() - this.cursorTime)
   }
 
-  toggleHome(): void {
-    if (this.isRamping()) return
+  toggleHome(): boolean {
+    if (this.isRamping()) return false
     const atBase =
       this.mode === 'playing' &&
       Math.abs(this.targetOffsetMs - this.baseDelayMs) < HOME_EPS_MS
     this.mode = 'playing'
     this.targetOffsetMs = atBase ? 0 : this.baseDelayMs
+    return true
   }
 
   private isRamping(): boolean {

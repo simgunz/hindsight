@@ -11,11 +11,14 @@ export function formatClock(ms: number): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
+const FLASH_MS = 1000
+
 export class SeekBar {
   readonly element: HTMLDivElement
   private readonly limit: HTMLSpanElement
   private readonly home: HTMLDivElement
   private readonly playhead: HTMLDivElement
+  private lingerUntil = 0
 
   constructor() {
     const element = document.createElement('div')
@@ -50,14 +53,19 @@ export class SeekBar {
     this.playhead = playhead
   }
 
+  pulse(): void {
+    this.lingerUntil = performance.now() + FLASH_MS
+  }
+
   sync(
     scrubbing: boolean,
     effectiveDelayMs: number,
     baseDelayMs: number,
     availableMs: number,
   ): void {
-    this.element.classList.toggle('visible', scrubbing)
-    if (!scrubbing) return
+    const visible = scrubbing || performance.now() < this.lingerUntil
+    this.element.classList.toggle('visible', visible)
+    if (!visible) return
     this.playhead.style.left = `${delayFraction(effectiveDelayMs, availableMs) * 100}%`
     this.home.style.left = `${delayFraction(baseDelayMs, availableMs) * 100}%`
     this.limit.textContent = `−${formatClock(availableMs)}`

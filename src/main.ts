@@ -171,8 +171,12 @@ async function startMirror(app: HTMLElement): Promise<void> {
 
   attachTaps(
     canvas,
-    () => pipeline.togglePause(),
-    () => pipeline.toggleHome(),
+    () => {
+      if (pipeline.togglePause()) seekBar.pulse()
+    },
+    () => {
+      if (pipeline.toggleHome()) seekBar.pulse()
+    },
   )
 
   attachScrub(canvas, {
