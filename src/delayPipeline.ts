@@ -160,12 +160,14 @@ export class DelayPipeline {
       this.mode = 'playing'
       return false
     }
+    if (this.isRamping()) return false
     this.mode = 'paused'
     this.pausedCursor = this.cursorTime
     return true
   }
 
   beginScrub(): void {
+    if (this.isRamping()) return
     this.mode = 'scrubbing'
     this.scrubBaseTime = this.cursorTime
     this.scrubDeltaMs = 0
@@ -184,11 +186,18 @@ export class DelayPipeline {
   }
 
   toggleHome(): void {
+    if (this.isRamping()) return
     const atBase =
       this.mode === 'playing' &&
       Math.abs(this.targetOffsetMs - this.baseDelayMs) < HOME_EPS_MS
     this.mode = 'playing'
     this.targetOffsetMs = atBase ? 0 : this.baseDelayMs
+  }
+
+  private isRamping(): boolean {
+    const oldest = this.buffer.oldestTime
+    if (oldest === undefined) return true
+    return performance.now() - oldest < this.targetOffsetMs
   }
 
   setBaseDelay(ms: number): void {
