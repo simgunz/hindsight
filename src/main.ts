@@ -22,8 +22,6 @@ const FRAMERATE = 30
 const BITRATE = 3_000_000
 const KEY_FRAME_INTERVAL = 60
 
-const RESUME_STALE_MS = 6000
-
 const DEBUG = new URLSearchParams(window.location.search).has('debug')
 const STARTED_KEY = 'hindsight.cameraStarted'
 const WALKTHROUGH_KEY = 'hindsight.walkthroughSeen'
@@ -234,6 +232,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
     if (switching) return
     switching = true
     stopSession()
+    canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height)
     indicator.element.hidden = true
     showStatus(statusText)
     let newStream: MediaStream
@@ -278,10 +277,9 @@ async function startMirror(app: HTMLElement): Promise<void> {
   function onResume(): void {
     if (document.visibilityState !== 'visible') return
     void requestWakeLock()
-    const ended = activeTrack?.readyState === 'ended'
-    const age = pipeline?.captureAgeMs() ?? 0
-    const stale = Number.isFinite(age) && age > RESUME_STALE_MS
-    if ((ended || stale) && !switching) void reacquire(camera, 'Reconnecting…')
+    if (activeTrack?.readyState === 'ended' && !switching) {
+      void reacquire(camera, 'Reconnecting…')
+    }
   }
   document.addEventListener('visibilitychange', onResume)
 
