@@ -109,10 +109,12 @@ export class Walkthrough {
   }
 
   private render(): void {
-    this.cards.forEach((card, i) =>
-      card.classList.toggle('active', i === this.index),
-    )
-    this.dots.forEach((dot, i) => dot.classList.toggle('on', i === this.index))
+    this.cards.forEach((card, i) => {
+      card.classList.toggle('active', i === this.index)
+    })
+    this.dots.forEach((dot, i) => {
+      dot.classList.toggle('on', i === this.index)
+    })
     this.nextBtn.textContent =
       this.index === CARDS.length - 1 ? 'Got it' : 'Next'
   }
