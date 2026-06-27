@@ -85,8 +85,8 @@ Swipe up opens a settings sheet with:
 - **Delay** — a drum wheel that snaps to a uniform ladder: `live (0)` then `5s` steps
   up to `240s`. No numeric input (keyboard-hostile mid-workout); the wheel plus
   presets cover every value (FR-006).
-- **Presets** — quick-select values (Gym 60s, Archery 30s), the primary fast path
-  (FR-008).
+- **Presets** — chips the user saves from the current delay (optionally labeled),
+  applied with a tap; the primary fast path (FR-008).
 
 The buffer window is not shown — it is derived (`delay + 60s`, capped at 300s). Front
 mirroring is not a setting either; it is fixed by camera (see below).

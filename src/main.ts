@@ -16,7 +16,7 @@ import { SeekBar } from './seekBar'
 import { SettingsSheet } from './settingsSheet'
 import { StatsOverlay } from './stats'
 
-const DEFAULT_DELAY_SECONDS = 10
+const DEFAULT_DELAY_SECONDS = 20
 const FRAMERATE = 30
 const BITRATE = 3_000_000
 const KEY_FRAME_INTERVAL = 60

@@ -22,7 +22,7 @@ under this section.
 | FR-003 | No persistence (in-memory buffer only) | US-002 | Delayed Mirror | implemented |
 | FR-004 | Startup delay ramp | US-001 | Delayed Mirror | implemented |
 | FR-005 | Loop runs hands-free | US-001 | Delayed Mirror | implemented |
-| FR-006 | Set base delay (live/0 or 5–240s in 5s steps, default 60) | US-003 | Delay Control | implemented |
+| FR-006 | Set base delay (live/0 or 5–240s in 5s steps, default 20) | US-003 | Delay Control | implemented |
 | FR-007 | Delay change takes effect immediately | US-003 | Delay Control | implemented |
 | FR-008 | Delay presets (persisted) | US-004 | Delay Control | implemented |
 | FR-009 | Horizontal drag scrubs the buffer | US-005 | Playback | implemented |
