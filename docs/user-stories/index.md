@@ -33,6 +33,7 @@ gallery, watch it, and delete it.
 | US-007 | Double tap to return to base delay | Playback | Important | implemented |
 | US-008 | Live mirrored view | Live mirror | Nice-to-have | implemented |
 | US-009 | Minimal, distraction-free, gesture-driven UI | Experience | Essential | implemented |
+| US-010 | Learn the gestures | Onboarding | Important | implemented |
 
 ## Delayed Mirror
 
@@ -104,3 +105,13 @@ few meters in a gym.
 
 *Example: the screen is mostly just my video; controls are gestures rather than
 visible buttons cluttering the view.*
+
+## Onboarding
+
+### US-010 — Learn the gestures
+**As a** first-time user, **I want** to be shown how the gesture controls work and be
+able to look them up again later, **so that** I can operate an app that has almost no
+visible buttons.
+
+*Example: on first launch I'm walked through swipe-up, double-tap, tap, and drag over
+the live view; later I open settings and tap "?" to refresh my memory.*
