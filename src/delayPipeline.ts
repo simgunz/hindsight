@@ -219,6 +219,15 @@ export class DelayPipeline {
     const keyFrame = this.framesSinceKey >= this.opts.keyFrameInterval
     this.framesSinceKey = keyFrame ? 1 : this.framesSinceKey + 1
     this.encoder.encode(frame, { keyFrame })
+    if (this.isLive()) {
+      this.displayedCount += 1
+      this.latencyMs = 0
+      this.draw(frame)
+    }
+  }
+
+  private isLive(): boolean {
+    return this.mode === 'playing' && this.targetOffsetMs === 0
   }
 
   getDelayState(): {
@@ -291,6 +300,10 @@ export class DelayPipeline {
   }
 
   private onDecoded(frame: VideoFrame): void {
+    if (this.isLive()) {
+      frame.close()
+      return
+    }
     if (this.seekTargetTs !== null) {
       if (frame.timestamp < this.seekTargetTs) {
         frame.close()
@@ -333,7 +346,8 @@ export class DelayPipeline {
     this.cursorTime = this.cursorForMode(now, oldest)
     this.effectiveDelayMs = now - this.cursorTime
     if (this.mode === 'scrubbing') this.renderScrub(this.cursorTime, now)
-    else if (this.mode !== 'paused') this.renderCursor(this.cursorTime)
+    else if (this.mode !== 'paused' && !this.isLive())
+      this.renderCursor(this.cursorTime)
   }
 
   private cursorForMode(now: number, oldest: number): number {
