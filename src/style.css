@@ -455,19 +455,6 @@ body.sheet-open .build-overlay {
   color: #9aa1a9;
 }
 
-.sheet-done {
-  width: 100%;
-  max-width: 24rem;
-  padding: 0.85rem;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #04121a;
-  background: #4fc9ec;
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-}
-
 .preset-bar {
   display: flex;
   gap: 0.5rem;

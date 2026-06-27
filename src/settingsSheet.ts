@@ -27,15 +27,8 @@ export class SettingsSheet {
     header.append(handle, title)
     this.attachSwipeDown(header)
 
-    const done = document.createElement('button')
-    done.type = 'button'
-    done.className = 'sheet-done'
-    done.textContent = 'Done'
-    done.addEventListener('click', () => this.close())
-
     panel.append(header, wheel.element)
     if (presetsEl) panel.append(presetsEl)
-    panel.append(done)
     root.append(scrim, panel)
     this.element = root
   }
