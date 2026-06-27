@@ -259,6 +259,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
     (seconds) => {
       applyDelay(seconds)
       wheel.setValue(seconds)
+      sheet.close()
     },
     (label) => {
       presets = [...presets, { label, seconds: currentSeconds }]
