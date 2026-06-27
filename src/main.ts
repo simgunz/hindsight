@@ -36,12 +36,14 @@ function renderCard(
   title: string,
   body: string,
   action?: CardAction,
+  accentTitle = false,
 ): void {
   parent.replaceChildren()
   const card = document.createElement('div')
   card.className = 'card'
 
   const heading = document.createElement('h1')
+  if (accentTitle) heading.className = 'accent'
   heading.textContent = title
   const text = document.createElement('p')
   text.textContent = body
@@ -500,6 +502,7 @@ async function boot(app: HTMLElement): Promise<void> {
     'Hindsight',
     'A mirror on a delay. See your own form, seconds after. Your video stays on your device, in memory only; nothing is saved or sent anywhere.',
     { label: 'Get started', onClick: () => void startMirror(app) },
+    true,
   )
 }
 
