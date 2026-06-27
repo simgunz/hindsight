@@ -16,6 +16,8 @@ export class StatsOverlay {
       `capture ${stats.capturedFps.toFixed(1)} fps`,
       `display ${stats.displayedFps.toFixed(1)} fps`,
       `delay ${(stats.effectiveDelayMs / 1000).toFixed(1)} s`,
+      `avail ${(stats.availableMs / 1000).toFixed(1)} s`,
+      `capture age ${Number.isFinite(stats.captureAgeMs) ? `${stats.captureAgeMs.toFixed(0)} ms` : '—'}`,
       `overhead ${overheadMs.toFixed(0)} ms`,
       `buffer ${stats.bufferChunks} ch / ${(stats.bufferBytes / 1_000_000).toFixed(1)} MB`,
       `dims req ${stats.configWidth}x${stats.configHeight} src ${stats.sourceWidth}x${stats.sourceHeight}`,

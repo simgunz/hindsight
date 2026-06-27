@@ -6,6 +6,7 @@ export interface PipelineStats {
   effectiveDelayMs: number
   targetDelayMs: number
   availableMs: number
+  captureAgeMs: number
   bufferChunks: number
   bufferBytes: number
   latencyMs: number
@@ -212,6 +213,13 @@ export class DelayPipeline {
     this.buffer.setMaxWindow(this.retentionWindowMs)
   }
 
+  captureAgeMs(): number {
+    const newest = this.buffer.newestTime
+    return newest === undefined
+      ? Number.POSITIVE_INFINITY
+      : performance.now() - newest
+  }
+
   encode(frame: VideoFrame): void {
     if (!this.encoderConfigured) this.configureEncoder(frame)
     this.captureWall.set(frame.timestamp, performance.now())
@@ -275,6 +283,8 @@ export class DelayPipeline {
       effectiveDelayMs: this.effectiveDelayMs,
       targetDelayMs: this.targetOffsetMs,
       availableMs: available,
+      captureAgeMs:
+        newest === undefined ? Number.POSITIVE_INFINITY : now - newest,
       bufferChunks: this.buffer.size,
       bufferBytes: this.buffer.bytes,
       latencyMs: this.latencyMs,

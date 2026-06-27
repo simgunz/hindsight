@@ -22,6 +22,8 @@ const FRAMERATE = 30
 const BITRATE = 3_000_000
 const KEY_FRAME_INTERVAL = 60
 
+const RESUME_STALE_MS = 6000
+
 const DEBUG = new URLSearchParams(window.location.search).has('debug')
 const STARTED_KEY = 'hindsight.cameraStarted'
 const WALKTHROUGH_KEY = 'hindsight.walkthroughSeen'
@@ -225,16 +227,18 @@ async function startMirror(app: HTMLElement): Promise<void> {
     activeTrack = null
   }
 
-  async function switchCamera(): Promise<void> {
+  async function reacquire(
+    facingMode: 'environment' | 'user',
+    statusText: string,
+  ): Promise<void> {
     if (switching) return
     switching = true
-    const next = camera === 'environment' ? 'user' : 'environment'
     stopSession()
     indicator.element.hidden = true
-    showStatus('Switching camera…')
-    let nextStream: MediaStream
+    showStatus(statusText)
+    let newStream: MediaStream
     try {
-      nextStream = await getStream(next)
+      newStream = await getStream(facingMode)
     } catch (error) {
       renderCard(app, 'Camera unavailable', (error as Error).message, {
         label: 'Reload',
@@ -243,8 +247,8 @@ async function startMirror(app: HTMLElement): Promise<void> {
       switching = false
       return
     }
-    const nextTrack = nextStream.getVideoTracks()[0]
-    if (!nextTrack) {
+    const newTrack = newStream.getVideoTracks()[0]
+    if (!newTrack) {
       renderCard(
         app,
         'No camera',
@@ -253,9 +257,9 @@ async function startMirror(app: HTMLElement): Promise<void> {
       switching = false
       return
     }
-    camera = next
+    camera = facingMode
     try {
-      await startSession(nextTrack)
+      await startSession(newTrack)
     } catch (error) {
       renderCard(app, 'Unsupported video', (error as Error).message)
       switching = false
@@ -263,6 +267,23 @@ async function startMirror(app: HTMLElement): Promise<void> {
     }
     switching = false
   }
+
+  async function switchCamera(): Promise<void> {
+    await reacquire(
+      camera === 'environment' ? 'user' : 'environment',
+      'Switching camera…',
+    )
+  }
+
+  function onResume(): void {
+    if (document.visibilityState !== 'visible') return
+    void requestWakeLock()
+    const ended = activeTrack?.readyState === 'ended'
+    const stale =
+      (pipeline?.captureAgeMs() ?? Number.POSITIVE_INFINITY) > RESUME_STALE_MS
+    if ((ended || stale) && !switching) void reacquire(camera, 'Reconnecting…')
+  }
+  document.addEventListener('visibilitychange', onResume)
 
   if (!walkthroughSeen) cameraTargets.environment = 0
 
