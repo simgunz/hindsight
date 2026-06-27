@@ -154,12 +154,15 @@ async function startMirror(app: HTMLElement): Promise<void> {
   let activeCodec = ''
   let camera: 'environment' | 'user' = 'environment'
   let switching = false
+  const cameraTargets: Partial<Record<'environment' | 'user', number>> = {}
 
   async function startSession(track: MediaStreamTrack): Promise<void> {
     const settings = track.getSettings()
     const width = settings.width ?? 1280
     const height = settings.height ?? 720
     activeCodec = await pickCodec(width, height, FRAMERATE, BITRATE)
+    const initialTargetMs =
+      cameraTargets[camera] ?? (camera === 'user' ? 0 : baseDelayMs)
     const session = new DelayPipeline({
       canvas,
       codec: activeCodec,
@@ -168,6 +171,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
       framerate: FRAMERATE,
       bitrate: BITRATE,
       baseDelayMs,
+      initialTargetMs,
       keyFrameInterval: KEY_FRAME_INTERVAL,
     })
     session.start()
@@ -183,6 +187,8 @@ async function startMirror(app: HTMLElement): Promise<void> {
   }
 
   function stopSession(): void {
+    if (pipeline)
+      cameraTargets[camera] = pipeline.getDelayState().targetOffsetMs
     source?.stop()
     pipeline?.stop()
     activeTrack?.stop()
