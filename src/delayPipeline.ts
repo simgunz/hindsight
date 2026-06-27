@@ -23,6 +23,7 @@ export interface DelayPipelineOptions {
   framerate: number
   bitrate: number
   baseDelayMs: number
+  initialTargetMs?: number
   keyFrameInterval: number
 }
 
@@ -103,7 +104,7 @@ export class DelayPipeline {
   constructor(opts: DelayPipelineOptions) {
     this.opts = opts
     this.baseDelayMs = opts.baseDelayMs
-    this.targetOffsetMs = opts.baseDelayMs
+    this.targetOffsetMs = opts.initialTargetMs ?? opts.baseDelayMs
     const ctx = opts.canvas.getContext('2d')
     if (!ctx) throw new Error('Canvas 2D context unavailable')
     this.ctx = ctx
