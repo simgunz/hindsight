@@ -240,7 +240,9 @@ export class DelayPipeline {
     hasFrame: boolean
   } {
     const oldest = this.buffer.oldestTime
-    const availableMs = oldest === undefined ? 0 : performance.now() - oldest
+    const newest = this.buffer.newestTime
+    const availableMs =
+      oldest === undefined || newest === undefined ? 0 : newest - oldest
     return {
       effectiveDelayMs: this.effectiveDelayMs,
       baseDelayMs: this.baseDelayMs,
@@ -264,7 +266,9 @@ export class DelayPipeline {
     this.sampleDisplayed = this.displayedCount
 
     const oldest = this.buffer.oldestTime
-    const available = oldest === undefined ? 0 : now - oldest
+    const newest = this.buffer.newestTime
+    const available =
+      oldest === undefined || newest === undefined ? 0 : newest - oldest
     return {
       capturedFps,
       displayedFps,
