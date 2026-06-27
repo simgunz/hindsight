@@ -31,23 +31,38 @@ interface CardAction {
   onClick: () => void
 }
 
+interface CardOptions {
+  accentTitle?: boolean
+  motto?: string
+}
+
 function renderCard(
   parent: HTMLElement,
   title: string,
   body: string,
   action?: CardAction,
-  accentTitle = false,
+  options: CardOptions = {},
 ): void {
   parent.replaceChildren()
   const card = document.createElement('div')
-  card.className = 'card'
+  card.className = options.motto ? 'card welcome' : 'card'
 
+  const head = document.createElement('div')
+  head.className = 'card-head'
   const heading = document.createElement('h1')
-  if (accentTitle) heading.className = 'accent'
+  if (options.accentTitle) heading.className = 'accent'
   heading.textContent = title
+  head.append(heading)
+  if (options.motto) {
+    const motto = document.createElement('p')
+    motto.className = 'card-motto'
+    motto.textContent = options.motto
+    head.append(motto)
+  }
+
   const text = document.createElement('p')
   text.textContent = body
-  card.append(heading, text)
+  card.append(head, text)
 
   if (action) {
     const button = document.createElement('button')
@@ -500,9 +515,9 @@ async function boot(app: HTMLElement): Promise<void> {
   renderCard(
     app,
     'Hindsight',
-    'A mirror on a delay. See your own form, seconds after. Your video stays on your device, in memory only; nothing is saved or sent anywhere.',
+    'Your video stays on this device, in memory only. Nothing is saved.',
     { label: 'Get started', onClick: () => void startMirror(app) },
-    true,
+    { accentTitle: true, motto: 'Train now. Watch it back.' },
   )
 }
 

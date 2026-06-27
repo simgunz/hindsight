@@ -716,20 +716,37 @@ body.walkthrough-open .build-overlay {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.25rem;
+  gap: 1.1rem;
   text-align: center;
   padding: 2rem;
+}
+
+.card-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .card h1 {
   margin: 0;
   font-family: var(--mono-display);
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .card h1.accent {
   color: var(--accent);
+  text-shadow: 0 0 22px rgba(79, 201, 236, 0.3);
+}
+
+.card-motto {
+  margin: 0;
+  font-family: var(--mono-display);
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: #fff;
 }
 
 .card p {
@@ -739,6 +756,11 @@ body.walkthrough-open .build-overlay {
   font-weight: 300;
   color: #c7d4d9;
   line-height: 1.55;
+}
+
+.card.welcome p {
+  font-size: 0.82rem;
+  color: #9aa1a9;
 }
 
 .card button {
