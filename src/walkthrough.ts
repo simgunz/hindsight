@@ -104,6 +104,7 @@ export class Walkthrough {
     this.index = 0
     this.render()
     this.element.hidden = false
+    document.body.classList.add('walkthrough-open')
     void this.element.offsetWidth
     this.element.classList.add('shown')
   }
@@ -130,6 +131,7 @@ export class Walkthrough {
 
   private close(): void {
     this.element.classList.remove('shown')
+    document.body.classList.remove('walkthrough-open')
     this.closeTimer = window.setTimeout(() => {
       this.element.hidden = true
       this.onDone()

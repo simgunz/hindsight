@@ -52,3 +52,20 @@ export function replayIcon(): SVGSVGElement {
     'M3 3v5h5',
   ])
 }
+
+export function pauseIcon(): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg')
+  svg.setAttribute('viewBox', '0 0 24 24')
+  svg.setAttribute('fill', 'currentColor')
+  svg.setAttribute('aria-hidden', 'true')
+  for (const x of [7, 14]) {
+    const rect = document.createElementNS(SVG_NS, 'rect')
+    rect.setAttribute('x', String(x))
+    rect.setAttribute('y', '5')
+    rect.setAttribute('width', '3')
+    rect.setAttribute('height', '14')
+    rect.setAttribute('rx', '1')
+    svg.appendChild(rect)
+  }
+  return svg
+}

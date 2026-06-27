@@ -13,8 +13,4 @@ describe('formatDelayLabel', () => {
   it('renders LIVE at zero delay (the live edge)', () => {
     expect(formatDelayLabel(0)).toBe('LIVE')
   })
-
-  it('prefixes a pause glyph when paused', () => {
-    expect(formatDelayLabel(10000, true)).toBe('⏸ −10s')
-  })
 })

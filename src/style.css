@@ -47,6 +47,9 @@ body {
   top: 0;
   left: 0;
   z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   margin: calc(env(safe-area-inset-top, 0px) + 0.75rem) 0.75rem;
   padding: 0.3rem 0.75rem;
   font-family: var(--mono-display);
@@ -59,6 +62,16 @@ body {
   border-radius: 999px;
   pointer-events: none;
   opacity: 0.7;
+}
+
+.pill-pause {
+  display: none;
+  width: 0.8em;
+  height: 0.8em;
+}
+
+.delay-pill.paused .pill-pause {
+  display: block;
 }
 
 .build-overlay {
@@ -81,7 +94,8 @@ body {
   display: none;
 }
 
-body.sheet-open .build-overlay {
+body.sheet-open .build-overlay,
+body.walkthrough-open .build-overlay {
   visibility: hidden;
 }
 

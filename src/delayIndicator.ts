@@ -1,24 +1,28 @@
-const PAUSE_GLYPH = '⏸'
+import { pauseIcon } from './icons'
 
-export function formatDelayLabel(
-  effectiveDelayMs: number,
-  paused = false,
-): string {
+export function formatDelayLabel(effectiveDelayMs: number): string {
   const seconds = Math.round(effectiveDelayMs / 1000)
-  const label = seconds === 0 ? 'LIVE' : `−${seconds}s`
-  return paused ? `${PAUSE_GLYPH} ${label}` : label
+  return seconds === 0 ? 'LIVE' : `−${seconds}s`
 }
 
 export class DelayIndicator {
   readonly element: HTMLDivElement
+  private readonly label: HTMLSpanElement
 
   constructor() {
     const element = document.createElement('div')
     element.className = 'delay-pill'
+
+    const icon = pauseIcon()
+    icon.classList.add('pill-pause')
+    this.label = document.createElement('span')
+
+    element.append(icon, this.label)
     this.element = element
   }
 
   update(effectiveDelayMs: number, paused = false): void {
-    this.element.textContent = formatDelayLabel(effectiveDelayMs, paused)
+    this.label.textContent = formatDelayLabel(effectiveDelayMs)
+    this.element.classList.toggle('paused', paused)
   }
 }
