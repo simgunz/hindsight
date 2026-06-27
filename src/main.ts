@@ -294,13 +294,15 @@ async function startMirror(app: HTMLElement): Promise<void> {
     },
   )
   presetBar.setPresets(presets)
-  const sheet = new SettingsSheet(wheel, presetBar.element)
+  const sheet = new SettingsSheet(wheel, presetBar.element, () =>
+    walkthrough.show(),
+  )
   app.append(sheet.element)
 
   attachOpenGesture(canvas, () => {
+    sheet.open()
     wheel.setValue(currentSeconds)
     presetBar.updateActive(currentSeconds)
-    sheet.open()
   })
 
   attachTaps(
