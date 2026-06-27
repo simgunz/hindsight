@@ -536,6 +536,63 @@ body.sheet-open .build-overlay {
   color: var(--accent);
 }
 
+.preset-chip.add {
+  min-width: 3rem;
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--accent);
+  background: none;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.preset-add {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+  max-width: 24rem;
+}
+
+.preset-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.8rem;
+  font-family: var(--mono-display);
+  font-size: 0.95rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.6rem;
+}
+
+.preset-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.preset-save {
+  padding: 0.55rem 1rem;
+  font-family: var(--mono-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  color: #04121a;
+  background: var(--accent);
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.preset-cancel {
+  padding: 0.55rem 0.7rem;
+  font-size: 0.9rem;
+  color: #9aa1a9;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
 .wheel {
   height: 220px;
   width: 100%;

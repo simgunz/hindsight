@@ -10,7 +10,7 @@ import { loadDelaySeconds, saveDelaySeconds } from './delayStore'
 import { DelayWheel } from './delayWheel'
 import { createFrameSource, type FrameSource } from './frameSource'
 import { PresetBar } from './presetBar'
-import { loadPresets } from './presetStore'
+import { loadPresets, savePresets } from './presetStore'
 import { registerPwa } from './pwa'
 import { SeekBar } from './seekBar'
 import { SettingsSheet } from './settingsSheet'
@@ -253,12 +253,21 @@ async function startMirror(app: HTMLElement): Promise<void> {
     presetBar.updateActive(seconds)
   }
 
+  let presets = loadPresets()
   const wheel = new DelayWheel((seconds) => applyDelay(seconds))
-  const presetBar = new PresetBar((seconds) => {
-    applyDelay(seconds)
-    wheel.setValue(seconds)
-  })
-  presetBar.setPresets(loadPresets())
+  const presetBar = new PresetBar(
+    (seconds) => {
+      applyDelay(seconds)
+      wheel.setValue(seconds)
+    },
+    (label) => {
+      presets = [...presets, { label, seconds: currentSeconds }]
+      savePresets(presets)
+      presetBar.setPresets(presets)
+      presetBar.updateActive(currentSeconds)
+    },
+  )
+  presetBar.setPresets(presets)
   const sheet = new SettingsSheet(wheel, presetBar.element)
   app.append(sheet.element)
 
