@@ -1,6 +1,6 @@
 ---
 id: user-stories
-status: approved
+status: implemented
 ---
 
 # User Stories
@@ -24,15 +24,15 @@ gallery, watch it, and delete it.
 
 | ID | Story | Area | Priority | Status |
 |----|-------|------|----------|--------|
-| US-001 | Watch myself on a delay, hands-free | Delayed mirror | Essential | approved |
-| US-002 | Never manage files | Delayed mirror | Essential | approved |
-| US-003 | Tune the delay | Delay control | Important | approved |
-| US-004 | Delay presets | Delay control | Nice-to-have | approved |
-| US-005 | Scrub back to rewatch | Playback | Important | approved |
-| US-006 | Single tap to pause | Playback | Important | approved |
-| US-007 | Double tap to return to base delay | Playback | Important | approved |
-| US-008 | Live mirrored view | Live mirror | Nice-to-have | approved |
-| US-009 | Minimal, distraction-free, gesture-driven UI | Experience | Essential | approved |
+| US-001 | Watch myself on a delay, hands-free | Delayed mirror | Essential | implemented |
+| US-002 | Never manage files | Delayed mirror | Essential | implemented |
+| US-003 | Tune the delay | Delay control | Important | implemented |
+| US-004 | Delay presets | Delay control | Nice-to-have | implemented |
+| US-005 | Scrub back to rewatch | Playback | Important | implemented |
+| US-006 | Single tap to pause | Playback | Important | implemented |
+| US-007 | Double tap to return to base delay | Playback | Important | implemented |
+| US-008 | Live mirrored view | Live mirror | Nice-to-have | implemented |
+| US-009 | Minimal, distraction-free, gesture-driven UI | Experience | Essential | implemented |
 
 ## Delayed Mirror
 

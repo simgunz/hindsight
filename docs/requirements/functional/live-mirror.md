@@ -1,6 +1,6 @@
 ---
 id: req-live-mirror
-status: approved
+status: implemented
 ---
 
 # Requirements — Live Mirror

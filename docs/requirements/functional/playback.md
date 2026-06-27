@@ -1,6 +1,6 @@
 ---
 id: req-playback
-status: approved
+status: implemented
 ---
 
 # Requirements — Playback Interaction
