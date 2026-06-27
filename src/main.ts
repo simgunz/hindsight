@@ -517,7 +517,7 @@ async function boot(app: HTMLElement): Promise<void> {
     'Hindsight',
     'Your video stays on this device, in memory only. Nothing is saved.',
     { label: 'Get started', onClick: () => void startMirror(app) },
-    { accentTitle: true, motto: 'Train now. Watch it back.' },
+    { accentTitle: true, motto: 'Your form, seconds later.' },
   )
 }
 
