@@ -1,0 +1,54 @@
+const SVG_NS = 'http://www.w3.org/2000/svg'
+
+function strokeIcon(paths: string[]): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg')
+  svg.setAttribute('viewBox', '0 0 24 24')
+  svg.setAttribute('fill', 'none')
+  svg.setAttribute('stroke', 'currentColor')
+  svg.setAttribute('stroke-width', '2')
+  svg.setAttribute('stroke-linecap', 'round')
+  svg.setAttribute('stroke-linejoin', 'round')
+  svg.setAttribute('aria-hidden', 'true')
+  for (const d of paths) {
+    const path = document.createElementNS(SVG_NS, 'path')
+    path.setAttribute('d', d)
+    svg.appendChild(path)
+  }
+  return svg
+}
+
+function circle(svg: SVGSVGElement, cx: number, cy: number, r: number): void {
+  const el = document.createElementNS(SVG_NS, 'circle')
+  el.setAttribute('cx', String(cx))
+  el.setAttribute('cy', String(cy))
+  el.setAttribute('r', String(r))
+  svg.appendChild(el)
+}
+
+export function cameraFlipIcon(): SVGSVGElement {
+  const svg = strokeIcon([
+    'M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5',
+    'M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5',
+    'm18 22-3-3 3-3',
+    'm6 2 3 3-3 3',
+  ])
+  circle(svg, 12, 12, 3)
+  return svg
+}
+
+export function helpIcon(): SVGSVGElement {
+  const svg = strokeIcon(['M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3', 'M12 17h.01'])
+  circle(svg, 12, 12, 10)
+  return svg
+}
+
+export function backIcon(): SVGSVGElement {
+  return strokeIcon(['m15 18-6-6 6-6'])
+}
+
+export function replayIcon(): SVGSVGElement {
+  return strokeIcon([
+    'M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8',
+    'M3 3v5h5',
+  ])
+}
