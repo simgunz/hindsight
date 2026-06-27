@@ -11,7 +11,7 @@ const GESTURES: GestureRow[] = [
   { glyph: '↑', label: 'Swipe up', desc: 'Delay & presets' },
   { glyph: '⊙⊙', label: 'Double-tap', desc: 'Live ↔ your delay' },
   { glyph: '⊙', label: 'Tap', desc: 'Pause / resume' },
-  { glyph: '↔', label: 'Drag', desc: 'Scrub back and forth' },
+  { glyph: '↔', label: 'Drag', desc: 'Rewind and replay' },
   {
     glyph: cameraFlipIcon,
     label: 'Top-right button',

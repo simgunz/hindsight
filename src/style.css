@@ -495,7 +495,8 @@ body.sheet-open .build-overlay {
 .wt-card.active .wt-drag .wt-touch {
   animation: wt-drag 2.2s ease-in-out infinite;
 }
-.wt-card.active .wt-setup svg {
+.wt-card.active .wt-setup svg,
+.wt-card.active .wt-welcome .wt-touch {
   animation: wt-breathe 3.5s ease-in-out infinite;
 }
 
