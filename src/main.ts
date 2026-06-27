@@ -9,6 +9,8 @@ import { DelayPipeline, pickCodec } from './delayPipeline'
 import { loadDelaySeconds, saveDelaySeconds } from './delayStore'
 import { DelayWheel } from './delayWheel'
 import { createFrameSource, type FrameSource } from './frameSource'
+import { PresetBar } from './presetBar'
+import { loadPresets } from './presetStore'
 import { registerPwa } from './pwa'
 import { SeekBar } from './seekBar'
 import { SettingsSheet } from './settingsSheet'
@@ -243,17 +245,26 @@ async function startMirror(app: HTMLElement): Promise<void> {
     return
   }
 
-  const wheel = new DelayWheel((seconds) => {
+  function applyDelay(seconds: number): void {
     currentSeconds = seconds
     baseDelayMs = seconds * 1000
     pipeline?.setBaseDelay(baseDelayMs)
     saveDelaySeconds(seconds)
+    presetBar.updateActive(seconds)
+  }
+
+  const wheel = new DelayWheel((seconds) => applyDelay(seconds))
+  const presetBar = new PresetBar((seconds) => {
+    applyDelay(seconds)
+    wheel.setValue(seconds)
   })
-  const sheet = new SettingsSheet(wheel)
+  presetBar.setPresets(loadPresets())
+  const sheet = new SettingsSheet(wheel, presetBar.element)
   app.append(sheet.element)
 
   attachOpenGesture(canvas, () => {
     wheel.setValue(currentSeconds)
+    presetBar.updateActive(currentSeconds)
     sheet.open()
   })
 

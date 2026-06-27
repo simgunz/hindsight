@@ -3,7 +3,7 @@ import type { DelayWheel } from './delayWheel'
 export class SettingsSheet {
   readonly element: HTMLDivElement
 
-  constructor(wheel: DelayWheel) {
+  constructor(wheel: DelayWheel, presetsEl?: HTMLElement) {
     const root = document.createElement('div')
     root.className = 'sheet-root'
 
@@ -33,7 +33,9 @@ export class SettingsSheet {
     done.textContent = 'Done'
     done.addEventListener('click', () => this.close())
 
-    panel.append(header, wheel.element, done)
+    panel.append(header, wheel.element)
+    if (presetsEl) panel.append(presetsEl)
+    panel.append(done)
     root.append(scrim, panel)
     this.element = root
   }

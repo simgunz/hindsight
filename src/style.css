@@ -468,6 +468,74 @@ body.sheet-open .build-overlay {
   cursor: pointer;
 }
 
+.preset-bar {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 24rem;
+  padding: 0.25rem 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.preset-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.preset-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-width: 3.6rem;
+  padding: 0.45rem 0.8rem;
+  font-family: var(--mono-display);
+  color: #dfe8eb;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.preset-label {
+  font-weight: 500;
+  font-size: 0.92rem;
+  line-height: 1.1;
+}
+
+.preset-delay {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: #7d8b91;
+}
+
+.preset-delay.solo {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #e8eef0;
+}
+
+.preset-affix {
+  opacity: 0.55;
+}
+
+.preset-chip.active {
+  color: #fff;
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(79, 201, 236, 0.4);
+}
+
+.preset-chip.active .preset-delay {
+  color: var(--accent);
+}
+
 .wheel {
   height: 220px;
   width: 100%;
