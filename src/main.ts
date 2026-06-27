@@ -279,8 +279,8 @@ async function startMirror(app: HTMLElement): Promise<void> {
     if (document.visibilityState !== 'visible') return
     void requestWakeLock()
     const ended = activeTrack?.readyState === 'ended'
-    const stale =
-      (pipeline?.captureAgeMs() ?? Number.POSITIVE_INFINITY) > RESUME_STALE_MS
+    const age = pipeline?.captureAgeMs() ?? 0
+    const stale = Number.isFinite(age) && age > RESUME_STALE_MS
     if ((ended || stale) && !switching) void reacquire(camera, 'Reconnecting…')
   }
   document.addEventListener('visibilitychange', onResume)
