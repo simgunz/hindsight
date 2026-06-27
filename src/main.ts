@@ -266,6 +266,12 @@ async function startMirror(app: HTMLElement): Promise<void> {
       presetBar.setPresets(presets)
       presetBar.updateActive(currentSeconds)
     },
+    (index) => {
+      presets = presets.filter((_, i) => i !== index)
+      savePresets(presets)
+      presetBar.setPresets(presets)
+      presetBar.updateActive(currentSeconds)
+    },
   )
   presetBar.setPresets(presets)
   const sheet = new SettingsSheet(wheel, presetBar.element)

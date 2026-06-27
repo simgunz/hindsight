@@ -536,6 +536,15 @@ body.sheet-open .build-overlay {
   color: var(--accent);
 }
 
+.preset-chip.confirming {
+  min-width: 5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ff6b6b;
+  background: rgba(220, 60, 60, 0.18);
+  border-color: rgba(255, 107, 107, 0.6);
+}
+
 .preset-chip.add {
   min-width: 3rem;
   font-size: 1.3rem;
