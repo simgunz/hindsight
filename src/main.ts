@@ -3,6 +3,7 @@ import '@fontsource/martian-mono/400.css'
 import '@fontsource/martian-mono/600.css'
 import './style.css'
 import { BuildOverlay } from './buildOverlay'
+import { CameraButton } from './cameraButton'
 import { DelayIndicator } from './delayIndicator'
 import { DelayPipeline, pickCodec } from './delayPipeline'
 import { loadDelaySeconds, saveDelaySeconds } from './delayStore'
@@ -123,6 +124,9 @@ async function startMirror(app: HTMLElement): Promise<void> {
   const seekBar = new SeekBar()
   app.append(seekBar.element)
 
+  const cameraButton = new CameraButton(() => void switchCamera())
+  app.append(cameraButton.element)
+
   let statusEl: HTMLParagraphElement | null = null
   const showStatus = (text: string): void => {
     if (!statusEl) {
@@ -146,7 +150,10 @@ async function startMirror(app: HTMLElement): Promise<void> {
 
   let pipeline: DelayPipeline | null = null
   let source: FrameSource | null = null
+  let activeTrack: MediaStreamTrack | null = null
   let activeCodec = ''
+  let camera: 'environment' | 'user' = 'environment'
+  let switching = false
 
   async function startSession(track: MediaStreamTrack): Promise<void> {
     const settings = track.getSettings()
@@ -165,12 +172,61 @@ async function startMirror(app: HTMLElement): Promise<void> {
     })
     session.start()
     pipeline = session
+    activeTrack = track
     if (DEBUG) Reflect.set(window, 'hindsightPipeline', session)
     source = createFrameSource(track)
     source.start((frame) => {
       session.encode(frame)
       frame.close()
     })
+  }
+
+  function stopSession(): void {
+    source?.stop()
+    pipeline?.stop()
+    activeTrack?.stop()
+    pipeline = null
+    source = null
+    activeTrack = null
+  }
+
+  async function switchCamera(): Promise<void> {
+    if (switching) return
+    switching = true
+    const next = camera === 'environment' ? 'user' : 'environment'
+    stopSession()
+    indicator.element.hidden = true
+    showStatus('Switching camera…')
+    let nextStream: MediaStream
+    try {
+      nextStream = await getStream(next)
+    } catch (error) {
+      renderCard(app, 'Camera unavailable', (error as Error).message, {
+        label: 'Reload',
+        onClick: () => window.location.reload(),
+      })
+      switching = false
+      return
+    }
+    const nextTrack = nextStream.getVideoTracks()[0]
+    if (!nextTrack) {
+      renderCard(
+        app,
+        'No camera',
+        'That camera is not available on this device.',
+      )
+      switching = false
+      return
+    }
+    camera = next
+    try {
+      await startSession(nextTrack)
+    } catch (error) {
+      renderCard(app, 'Unsupported video', (error as Error).message)
+      switching = false
+      return
+    }
+    switching = false
   }
 
   try {
@@ -218,6 +274,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
       const state = p.getDelayState()
       if (state.hasFrame) clearStatus()
       indicator.element.hidden = !state.hasFrame
+      cameraButton.element.hidden = !state.hasFrame
       if (state.hasFrame)
         buildOverlay.sync(state.targetOffsetMs, state.availableMs)
       indicator.update(state.effectiveDelayMs, state.baseDelayMs, state.paused)

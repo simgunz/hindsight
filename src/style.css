@@ -217,6 +217,33 @@ body.sheet-open .build-overlay {
   }
 }
 
+.camera-btn {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 6;
+  margin: calc(env(safe-area-inset-top, 0px) + 0.75rem) 0.75rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.camera-btn svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.camera-btn[hidden] {
+  display: none;
+}
+
 .seek-bar {
   position: fixed;
   left: 0;
