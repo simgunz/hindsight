@@ -311,7 +311,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
       cameraButton.element.hidden = !state.hasFrame
       if (state.hasFrame)
         buildOverlay.sync(state.targetOffsetMs, state.availableMs)
-      indicator.update(state.effectiveDelayMs, state.baseDelayMs, state.paused)
+      indicator.update(state.effectiveDelayMs, state.paused)
       seekBar.sync(
         state.scrubbing,
         state.effectiveDelayMs,

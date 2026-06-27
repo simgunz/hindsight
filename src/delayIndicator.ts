@@ -18,11 +18,7 @@ export class DelayIndicator {
     this.element = element
   }
 
-  update(effectiveDelayMs: number, baseDelayMs: number, paused = false): void {
+  update(effectiveDelayMs: number, paused = false): void {
     this.element.textContent = formatDelayLabel(effectiveDelayMs, paused)
-    this.element.classList.toggle(
-      'steady',
-      !paused && effectiveDelayMs >= baseDelayMs - 250,
-    )
   }
 }

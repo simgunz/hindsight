@@ -58,11 +58,7 @@ body {
   background: rgba(0, 0, 0, 0.5);
   border-radius: 999px;
   pointer-events: none;
-  transition: opacity 0.6s ease;
-}
-
-.delay-pill.steady {
-  opacity: 0.4;
+  opacity: 0.7;
 }
 
 .build-overlay {
@@ -237,6 +233,7 @@ body.sheet-open .build-overlay {
   border: none;
   border-radius: 999px;
   cursor: pointer;
+  opacity: 0.7;
 }
 
 .camera-btn svg {
@@ -616,7 +613,9 @@ body.sheet-open .build-overlay {
   align-items: center;
   justify-content: center;
   scroll-snap-align: center;
+  font-family: var(--mono-display);
   font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
   color: #6b7178;
   transition:
     color 0.15s ease,
