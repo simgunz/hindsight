@@ -123,10 +123,20 @@ async function startMirror(app: HTMLElement): Promise<void> {
   const seekBar = new SeekBar()
   app.append(seekBar.element)
 
-  let warming: HTMLParagraphElement | null = document.createElement('p')
-  warming.className = 'message'
-  warming.textContent = 'Starting camera…'
-  app.append(warming)
+  let statusEl: HTMLParagraphElement | null = null
+  const showStatus = (text: string): void => {
+    if (!statusEl) {
+      statusEl = document.createElement('p')
+      statusEl.className = 'message'
+      app.append(statusEl)
+    }
+    statusEl.textContent = text
+  }
+  const clearStatus = (): void => {
+    statusEl?.remove()
+    statusEl = null
+  }
+  showStatus('Starting camera…')
 
   const overlay = DEBUG ? new StatsOverlay() : null
   if (overlay) app.append(overlay.element)
@@ -206,10 +216,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
     const p = pipeline
     if (p) {
       const state = p.getDelayState()
-      if (state.hasFrame && warming) {
-        warming.remove()
-        warming = null
-      }
+      if (state.hasFrame) clearStatus()
       indicator.element.hidden = !state.hasFrame
       if (state.hasFrame)
         buildOverlay.sync(state.targetOffsetMs, state.availableMs)
