@@ -38,6 +38,10 @@ body {
   touch-action: none;
 }
 
+.viewport.mirrored {
+  transform: scaleX(-1);
+}
+
 .delay-pill {
   position: fixed;
   top: 0;

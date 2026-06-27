@@ -171,6 +171,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
       keyFrameInterval: KEY_FRAME_INTERVAL,
     })
     session.start()
+    canvas.classList.toggle('mirrored', camera === 'user')
     pipeline = session
     activeTrack = track
     if (DEBUG) Reflect.set(window, 'hindsightPipeline', session)
