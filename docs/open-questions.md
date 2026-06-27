@@ -7,26 +7,10 @@ id: open-questions
 Items requiring future discussion or refinement. These should NOT block MVP
 implementation.
 
-## Pending Design Decisions
-
-### OQ-3: Custom preset management
-**Context:** v1 seeds "Gym 60s" and "Archery 30s" presets ([FR-008](requirements/functional/delay-control.md#fr-008-delay-presets)).
-The user said presets were a "possible" nice-to-have.
-
-**Question:** Can the user add/edit/remove presets, or are presets seeded-only in v1?
-
-**Options to explore:**
-- Seeded presets only (simplest)
-- Editable preset list
-
-**Status:** Deferred — seeded-only unless the user wants editing.
-
 ## Implementation-Time Decisions
 
 | ID | Question | When to Decide | Notes |
 |----|----------|----------------|-------|
-| OQ-I1 | Scrub gesture sensitivity / pixels-to-seconds mapping | First playback prototype | Tune by feel |
-| OQ-I2 | Startup ramp indicator (how to signal delay is still growing) | Building the delayed loop | Keep subtle, distraction-free |
 | OQ-I3 | Orientation: support both vs lock to one | After trying the propped setup | NFR-006 assumes both |
 
 ## Resolved Questions
@@ -43,3 +27,17 @@ rewatch headroom, capped at 300s. The cap follows the memory budget: at the meas
 therefore caps at 240s (240 + 60 = 300). Lowering the encoder bitrate can extend the
 window if ever needed (a quality trade-off). See
 [FR-006](requirements/functional/delay-control.md#fr-006-set-base-delay).
+
+### OQ-3: Custom preset management
+**Resolved:** presets are fully user-customizable (no seed). The user saves the
+current wheel value as a labeled preset via a `+` chip, applies one with a tap
+(which closes settings), and removes one with a long-press confirm. Persisted to
+localStorage. See [FR-008](requirements/functional/delay-control.md#fr-008-delay-presets).
+
+### OQ-I1: Scrub gesture sensitivity
+**Resolved:** relative-delta mapping at ~20s of footage per screen-width; only the
+frame under the finger is drawn (coalesced seeks). Tunable per device.
+
+### OQ-I2: Startup ramp indicator
+**Resolved:** an honest full-screen countdown overlay ("Replay in Ns") over live
+video while the delay builds, collapsing to the delay pill once warmed.

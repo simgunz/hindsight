@@ -32,7 +32,7 @@ under this section.
 | FR-013 | Scrubbing is bounded | US-005 | Playback | implemented |
 | FR-014 | Live front-camera view, zero delay | US-008 | Live Mirror | implemented |
 | FR-015 | Live view is mirrored | US-008 | Live Mirror | implemented |
-| FR-016 | Switching modes suspends/resumes the loop | US-008 | Live Mirror | implemented |
+| FR-016 | Switching camera resets and re-ramps the buffer | US-008 | Live Mirror | implemented |
 
 ## Non-functional requirements
 
