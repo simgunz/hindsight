@@ -245,6 +245,42 @@ body.sheet-open .build-overlay {
   display: none;
 }
 
+.swipe-handle {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+  transform: translateX(-50%);
+  z-index: 6;
+  width: 2.5rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  animation: swipe-handle 2.6s ease-in-out infinite;
+}
+
+.swipe-handle[hidden] {
+  display: none;
+}
+
+@keyframes swipe-handle {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(-50%, -4px);
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swipe-handle {
+    animation: none;
+  }
+}
+
 .seek-bar {
   position: fixed;
   left: 0;

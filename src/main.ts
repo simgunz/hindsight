@@ -129,6 +129,10 @@ async function startMirror(app: HTMLElement): Promise<void> {
   const cameraButton = new CameraButton(() => void switchCamera())
   app.append(cameraButton.element)
 
+  const swipeHandle = document.createElement('div')
+  swipeHandle.className = 'swipe-handle'
+  app.append(swipeHandle)
+
   let statusEl: HTMLParagraphElement | null = null
   const showStatus = (text: string): void => {
     if (!statusEl) {
@@ -309,6 +313,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
       if (state.hasFrame) clearStatus()
       indicator.element.hidden = !state.hasFrame
       cameraButton.element.hidden = !state.hasFrame
+      swipeHandle.hidden = !state.hasFrame
       if (state.hasFrame)
         buildOverlay.sync(state.targetOffsetMs, state.availableMs)
       indicator.update(state.effectiveDelayMs, state.paused)
