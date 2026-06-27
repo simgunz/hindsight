@@ -498,8 +498,8 @@ async function boot(app: HTMLElement): Promise<void> {
   renderCard(
     app,
     'Hindsight',
-    'See yourself on a delay, hands-free. Video stays on your device, in memory only. Nothing is saved or sent anywhere, and it clears the moment you close the app.',
-    { label: 'Start mirror', onClick: () => void startMirror(app) },
+    'A mirror on a delay. See your own form, seconds after. Your video stays on your device, in memory only; nothing is saved or sent anywhere.',
+    { label: 'Get started', onClick: () => void startMirror(app) },
   )
 }
 

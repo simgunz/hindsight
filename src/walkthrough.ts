@@ -1,6 +1,6 @@
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
-type CueKind = 'welcome' | 'setup' | 'swipe' | 'double' | 'tap' | 'drag'
+type CueKind = 'setup' | 'swipe' | 'double' | 'tap' | 'drag'
 
 interface CardSpec {
   kind: CueKind
@@ -9,11 +9,6 @@ interface CardSpec {
 }
 
 const CARDS: CardSpec[] = [
-  {
-    kind: 'welcome',
-    title: 'Hindsight',
-    sub: 'A mirror on a delay. See your own form, seconds after.',
-  },
   {
     kind: 'setup',
     title: 'Prop it a few meters away',
