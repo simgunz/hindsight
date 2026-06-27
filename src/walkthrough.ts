@@ -11,8 +11,8 @@ interface CardSpec {
 const CARDS: CardSpec[] = [
   {
     kind: 'welcome',
-    title: 'Hindsight, a mirror on a delay',
-    sub: 'Your form, in hindsight.',
+    title: 'Hindsight',
+    sub: 'A mirror on a delay. See your own form, seconds after.',
   },
   {
     kind: 'setup',
@@ -142,8 +142,7 @@ export class Walkthrough {
     card.append(this.buildCue(spec.kind))
 
     const title = document.createElement('div')
-    const plainTitle = spec.kind === 'setup' || spec.kind === 'welcome'
-    title.className = plainTitle ? 'wt-title' : 'wt-title accent'
+    title.className = spec.kind === 'setup' ? 'wt-title' : 'wt-title accent'
     title.textContent = spec.title
 
     const sub = document.createElement('div')
