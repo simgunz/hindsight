@@ -15,6 +15,7 @@ import { registerPwa } from './pwa'
 import { SeekBar } from './seekBar'
 import { SettingsSheet } from './settingsSheet'
 import { StatsOverlay } from './stats'
+import { Walkthrough } from './walkthrough'
 
 const DEFAULT_DELAY_SECONDS = 20
 const FRAMERATE = 30
@@ -23,6 +24,7 @@ const KEY_FRAME_INTERVAL = 60
 
 const DEBUG = new URLSearchParams(window.location.search).has('debug')
 const STARTED_KEY = 'hindsight.cameraStarted'
+const WALKTHROUGH_KEY = 'hindsight.walkthroughSeen'
 
 interface CardAction {
   label: string
@@ -161,6 +163,9 @@ async function startMirror(app: HTMLElement): Promise<void> {
   let camera: 'environment' | 'user' = 'environment'
   let switching = false
   const cameraTargets: Partial<Record<'environment' | 'user', number>> = {}
+  const walkthroughSeen = localStorage.getItem(WALKTHROUGH_KEY) === '1'
+  let resolvingWalkthrough = false
+  let walkthroughTriggered = false
 
   async function startSession(track: MediaStreamTrack): Promise<void> {
     const settings = track.getSettings()
@@ -242,12 +247,22 @@ async function startMirror(app: HTMLElement): Promise<void> {
     switching = false
   }
 
+  if (!walkthroughSeen) cameraTargets.environment = 0
+
   try {
     await startSession(firstTrack)
   } catch (error) {
     renderCard(app, 'Unsupported video', (error as Error).message)
     return
   }
+
+  const walkthrough = new Walkthrough(() => {
+    if (!resolvingWalkthrough) return
+    resolvingWalkthrough = false
+    localStorage.setItem(WALKTHROUGH_KEY, '1')
+    applyDelay(currentSeconds)
+  })
+  app.append(walkthrough.element)
 
   function applyDelay(seconds: number): void {
     currentSeconds = seconds
@@ -314,6 +329,11 @@ async function startMirror(app: HTMLElement): Promise<void> {
       indicator.element.hidden = !state.hasFrame
       cameraButton.element.hidden = !state.hasFrame
       swipeHandle.hidden = !state.hasFrame
+      if (!walkthroughSeen && !walkthroughTriggered && state.hasFrame) {
+        walkthroughTriggered = true
+        resolvingWalkthrough = true
+        walkthrough.show()
+      }
       if (state.hasFrame)
         buildOverlay.sync(state.targetOffsetMs, state.availableMs)
       indicator.update(state.effectiveDelayMs, state.paused)
