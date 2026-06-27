@@ -159,7 +159,26 @@ export class PresetBar {
     chip.className = 'preset-chip add'
     chip.setAttribute('aria-label', 'Add preset')
     chip.textContent = '+'
-    chip.addEventListener('click', () => this.enterAdd())
+
+    let startX = 0
+    let startY = 0
+    let moved = false
+    chip.addEventListener('pointerdown', (event) => {
+      startX = event.clientX
+      startY = event.clientY
+      moved = false
+    })
+    chip.addEventListener('pointermove', (event) => {
+      if (
+        Math.hypot(event.clientX - startX, event.clientY - startY) >
+        MOVE_CANCEL_PX
+      ) {
+        moved = true
+      }
+    })
+    chip.addEventListener('pointerup', () => {
+      if (!moved) this.enterAdd()
+    })
     return chip
   }
 
