@@ -7,7 +7,7 @@ import { DelayIndicator } from './delayIndicator'
 import { DelayPipeline, pickCodec } from './delayPipeline'
 import { loadDelaySeconds, saveDelaySeconds } from './delayStore'
 import { DelayWheel } from './delayWheel'
-import { createFrameSource } from './frameSource'
+import { createFrameSource, type FrameSource } from './frameSource'
 import { registerPwa } from './pwa'
 import { SeekBar } from './seekBar'
 import { SettingsSheet } from './settingsSheet'
@@ -65,21 +65,25 @@ async function requestWakeLock(): Promise<void> {
   await navigator.wakeLock.request('screen').catch(() => undefined)
 }
 
+function getStream(facingMode: 'environment' | 'user'): Promise<MediaStream> {
+  return navigator.mediaDevices.getUserMedia({
+    video: {
+      facingMode,
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+      frameRate: { ideal: FRAMERATE },
+    },
+    audio: false,
+  })
+}
+
 async function startMirror(app: HTMLElement): Promise<void> {
   app.replaceChildren()
   renderMessage(app, 'Starting camera…')
 
   let stream: MediaStream
   try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: 'environment',
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        frameRate: { ideal: FRAMERATE },
-      },
-      audio: false,
-    })
+    stream = await getStream('environment')
   } catch (error) {
     if ((error as Error).name === 'NotAllowedError') {
       renderCard(
@@ -97,25 +101,13 @@ async function startMirror(app: HTMLElement): Promise<void> {
     return
   }
 
-  const track = stream.getVideoTracks()[0]
-  if (!track) {
+  const firstTrack = stream.getVideoTracks()[0]
+  if (!firstTrack) {
     renderCard(app, 'No camera', 'No camera track is available on this device.')
     return
   }
 
   localStorage.setItem(STARTED_KEY, '1')
-
-  const settings = track.getSettings()
-  const width = settings.width ?? 1280
-  const height = settings.height ?? 720
-
-  let codec: string
-  try {
-    codec = await pickCodec(width, height, FRAMERATE, BITRATE)
-  } catch (error) {
-    renderCard(app, 'Unsupported video', (error as Error).message)
-    return
-  }
 
   app.replaceChildren()
   const canvas = document.createElement('canvas')
@@ -142,23 +134,46 @@ async function startMirror(app: HTMLElement): Promise<void> {
   let currentSeconds = loadDelaySeconds(DEFAULT_DELAY_SECONDS)
   let baseDelayMs = currentSeconds * 1000
 
-  const pipeline = new DelayPipeline({
-    canvas,
-    codec,
-    width,
-    height,
-    framerate: FRAMERATE,
-    bitrate: BITRATE,
-    baseDelayMs,
-    keyFrameInterval: KEY_FRAME_INTERVAL,
-  })
-  pipeline.start()
-  if (DEBUG) Reflect.set(window, 'hindsightPipeline', pipeline)
+  let pipeline: DelayPipeline | null = null
+  let source: FrameSource | null = null
+  let activeCodec = ''
+
+  async function startSession(track: MediaStreamTrack): Promise<void> {
+    const settings = track.getSettings()
+    const width = settings.width ?? 1280
+    const height = settings.height ?? 720
+    activeCodec = await pickCodec(width, height, FRAMERATE, BITRATE)
+    const session = new DelayPipeline({
+      canvas,
+      codec: activeCodec,
+      width,
+      height,
+      framerate: FRAMERATE,
+      bitrate: BITRATE,
+      baseDelayMs,
+      keyFrameInterval: KEY_FRAME_INTERVAL,
+    })
+    session.start()
+    pipeline = session
+    if (DEBUG) Reflect.set(window, 'hindsightPipeline', session)
+    source = createFrameSource(track)
+    source.start((frame) => {
+      session.encode(frame)
+      frame.close()
+    })
+  }
+
+  try {
+    await startSession(firstTrack)
+  } catch (error) {
+    renderCard(app, 'Unsupported video', (error as Error).message)
+    return
+  }
 
   const wheel = new DelayWheel((seconds) => {
     currentSeconds = seconds
     baseDelayMs = seconds * 1000
-    pipeline.setBaseDelay(baseDelayMs)
+    pipeline?.setBaseDelay(baseDelayMs)
     saveDelaySeconds(seconds)
   })
   const sheet = new SettingsSheet(wheel)
@@ -172,50 +187,48 @@ async function startMirror(app: HTMLElement): Promise<void> {
   attachTaps(
     canvas,
     () => {
-      if (pipeline.togglePause()) seekBar.pulse()
+      if (pipeline?.togglePause()) seekBar.pulse()
     },
     () => {
-      if (pipeline.toggleHome()) seekBar.pulse()
+      if (pipeline?.toggleHome()) seekBar.pulse()
     },
   )
 
   attachScrub(canvas, {
-    begin: () => pipeline.beginScrub(),
-    move: (deltaMs) => pipeline.scrubBy(deltaMs),
-    end: () => pipeline.endScrub(),
-  })
-
-  const source = createFrameSource(track)
-  source.start((frame) => {
-    pipeline.encode(frame)
-    frame.close()
+    begin: () => pipeline?.beginScrub(),
+    move: (deltaMs) => pipeline?.scrubBy(deltaMs),
+    end: () => pipeline?.endScrub(),
   })
 
   void requestWakeLock()
 
   const drive = (): void => {
-    const state = pipeline.getDelayState()
-    if (state.hasFrame && warming) {
-      warming.remove()
-      warming = null
+    const p = pipeline
+    if (p) {
+      const state = p.getDelayState()
+      if (state.hasFrame && warming) {
+        warming.remove()
+        warming = null
+      }
+      indicator.element.hidden = !state.hasFrame
+      if (state.hasFrame)
+        buildOverlay.sync(state.targetOffsetMs, state.availableMs)
+      indicator.update(state.effectiveDelayMs, state.baseDelayMs, state.paused)
+      seekBar.sync(
+        state.scrubbing,
+        state.effectiveDelayMs,
+        state.baseDelayMs,
+        state.availableMs,
+      )
     }
-    indicator.element.hidden = !state.hasFrame
-    if (state.hasFrame)
-      buildOverlay.sync(state.targetOffsetMs, state.availableMs)
-    indicator.update(state.effectiveDelayMs, state.baseDelayMs, state.paused)
-    seekBar.sync(
-      state.scrubbing,
-      state.effectiveDelayMs,
-      state.baseDelayMs,
-      state.availableMs,
-    )
     requestAnimationFrame(drive)
   }
   requestAnimationFrame(drive)
 
   setInterval(() => {
-    const stats = pipeline.getStats()
-    overlay?.update(stats, codec)
+    const p = pipeline
+    if (!p) return
+    overlay?.update(p.getStats(), activeCodec)
   }, 250)
 }
 
