@@ -19,3 +19,6 @@ site/
 
 # Local Netlify folder
 .netlify
+
+# Agent worktree scratch
+.claude/worktrees/
