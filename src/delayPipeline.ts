@@ -144,6 +144,21 @@ export class DelayPipeline {
     this.encoderConfigured = true
   }
 
+  private reconfigure(frame: VideoFrame): void {
+    this.encoder.reset()
+    this.configureEncoder(frame)
+    this.decoder.reset()
+    this.decoderConfig = null
+    this.buffer.clear()
+    this.sizeSet = false
+    this.framesSinceKey = this.opts.keyFrameInterval
+    this.lastTargetWall = null
+    this.seekTargetTs = null
+    this.committedDelayMs = 0
+    this.captureWall.clear()
+    this.decodeWall.clear()
+  }
+
   start(): void {
     this.rafId = requestAnimationFrame(this.feed)
   }
@@ -222,6 +237,11 @@ export class DelayPipeline {
 
   encode(frame: VideoFrame): void {
     if (!this.encoderConfigured) this.configureEncoder(frame)
+    else if (
+      frame.displayWidth !== this.sourceWidth ||
+      frame.displayHeight !== this.sourceHeight
+    )
+      this.reconfigure(frame)
     this.captureWall.set(frame.timestamp, performance.now())
     this.capturedCount += 1
     const keyFrame = this.framesSinceKey >= this.opts.keyFrameInterval

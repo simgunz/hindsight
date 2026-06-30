@@ -23,6 +23,11 @@ export class TimedRingBuffer<T> {
     this.evict()
   }
 
+  clear(): void {
+    this.entries.length = 0
+    this.totalBytes = 0
+  }
+
   push(time: number, bytes: number, value: T): void {
     this.entries.push({ time, bytes, value })
     this.totalBytes += bytes

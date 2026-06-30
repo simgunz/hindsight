@@ -9,6 +9,16 @@ describe('TimedRingBuffer', () => {
     expect(buffer.size).toBe(2)
   })
 
+  it('drops all entries and bytes when cleared', () => {
+    const buffer = new TimedRingBuffer<string>()
+    buffer.push(0, 100, 'a')
+    buffer.push(33, 100, 'b')
+    buffer.clear()
+    expect(buffer.size).toBe(0)
+    expect(buffer.bytes).toBe(0)
+    expect(buffer.oldestTime).toBeUndefined()
+  })
+
   it('returns the entry active at a given time', () => {
     const buffer = new TimedRingBuffer<string>()
     buffer.push(0, 100, 'a')
