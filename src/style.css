@@ -231,7 +231,8 @@ body.walkthrough-open .build-overlay {
   }
 }
 
-.camera-btn {
+.camera-btn,
+.help-btn {
   position: fixed;
   top: 0;
   right: 0;
@@ -250,27 +251,44 @@ body.walkthrough-open .build-overlay {
   opacity: 0.7;
 }
 
-.camera-btn svg {
+.help-btn {
+  margin-right: 4rem;
+}
+
+.camera-btn svg,
+.help-btn svg {
   width: 1.4rem;
   height: 1.4rem;
 }
 
-.camera-btn[hidden] {
+.camera-btn[hidden],
+.help-btn[hidden] {
   display: none;
 }
 
 .swipe-handle {
   position: fixed;
   left: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 0.6rem);
   transform: translateX(-50%);
   z-index: 6;
-  width: 2.5rem;
-  height: 0.25rem;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 2rem;
+  padding: 0;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.35);
-  pointer-events: none;
+  cursor: pointer;
+  opacity: 0.7;
   animation: swipe-handle 2.6s ease-in-out infinite;
+}
+
+.swipe-handle svg {
+  width: 1.3rem;
+  height: 1.3rem;
 }
 
 .swipe-handle[hidden] {
@@ -281,11 +299,11 @@ body.walkthrough-open .build-overlay {
   0%,
   100% {
     transform: translate(-50%, 0);
-    opacity: 0.35;
+    opacity: 0.6;
   }
   50% {
-    transform: translate(-50%, -4px);
-    opacity: 0.6;
+    transform: translate(-50%, -3px);
+    opacity: 0.85;
   }
 }
 
@@ -845,36 +863,6 @@ body.walkthrough-open .build-overlay {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #9aa1a9;
-}
-
-.sheet-nav {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 24rem;
-}
-
-.sheet-icon {
-  width: 2rem;
-  height: 2rem;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  color: #9aa1a9;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.sheet-icon svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.sheet-icon.gone {
-  visibility: hidden;
 }
 
 .sheet-view {

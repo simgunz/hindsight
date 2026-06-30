@@ -10,6 +10,8 @@ import { loadDelaySeconds, saveDelaySeconds } from './delayStore'
 import { DelayWheel } from './delayWheel'
 import { createFrameNormalizer } from './frameNormalizer'
 import { createFrameSource, type FrameSource } from './frameSource'
+import { HelpButton } from './helpButton'
+import { chevronUpIcon } from './icons'
 import { PresetBar } from './presetBar'
 import { loadPresets, savePresets } from './presetStore'
 import { registerPwa } from './pwa'
@@ -149,8 +151,11 @@ async function startMirror(app: HTMLElement): Promise<void> {
   const cameraButton = new CameraButton(() => void switchCamera())
   app.append(cameraButton.element)
 
-  const swipeHandle = document.createElement('div')
+  const swipeHandle = document.createElement('button')
+  swipeHandle.type = 'button'
   swipeHandle.className = 'swipe-handle'
+  swipeHandle.setAttribute('aria-label', 'Open controls')
+  swipeHandle.appendChild(chevronUpIcon())
   app.append(swipeHandle)
 
   let statusEl: HTMLParagraphElement | null = null
@@ -341,10 +346,20 @@ async function startMirror(app: HTMLElement): Promise<void> {
   )
   app.append(sheet.element)
 
-  attachOpenGesture(canvas, () => {
+  const helpButton = new HelpButton(() => {
+    sheet.open('gestures')
+  })
+  app.append(helpButton.element)
+
+  const openControls = (): void => {
     sheet.open()
     wheel.setValue(currentSeconds)
     presetBar.updateActive(currentSeconds)
+  }
+  attachOpenGesture(canvas, openControls)
+  swipeHandle.addEventListener('click', (event) => {
+    event.stopPropagation()
+    openControls()
   })
 
   attachTaps(
@@ -372,6 +387,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
       if (state.hasFrame) clearStatus()
       indicator.element.hidden = !state.hasFrame
       cameraButton.element.hidden = !state.hasFrame
+      helpButton.element.hidden = !state.hasFrame
       swipeHandle.hidden = !state.hasFrame
       if (!walkthroughSeen && !walkthroughTriggered && state.hasFrame) {
         walkthroughTriggered = true

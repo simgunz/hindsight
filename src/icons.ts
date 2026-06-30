@@ -46,6 +46,10 @@ export function backIcon(): SVGSVGElement {
   return strokeIcon(['m15 18-6-6 6-6'])
 }
 
+export function chevronUpIcon(): SVGSVGElement {
+  return strokeIcon(['m6 15 6-6 6 6'])
+}
+
 export function replayIcon(): SVGSVGElement {
   return strokeIcon([
     'M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8',

@@ -1,5 +1,5 @@
 import type { DelayWheel } from './delayWheel'
-import { backIcon, cameraFlipIcon, helpIcon, replayIcon } from './icons'
+import { cameraFlipIcon, replayIcon } from './icons'
 
 interface GestureRow {
   glyph: string | (() => SVGSVGElement)
@@ -14,7 +14,7 @@ const GESTURES: GestureRow[] = [
   { glyph: '↔', label: 'Drag', desc: 'Rewind and replay' },
   {
     glyph: cameraFlipIcon,
-    label: 'Top-right button',
+    label: 'Camera button',
     desc: 'Flip front / back camera',
   },
 ]
@@ -22,8 +22,6 @@ const GESTURES: GestureRow[] = [
 export class SettingsSheet {
   readonly element: HTMLDivElement
   private readonly title: HTMLHeadingElement
-  private readonly back: HTMLButtonElement
-  private readonly help: HTMLButtonElement
   private readonly delayView: HTMLDivElement
   private readonly gesturesView: HTMLDivElement
 
@@ -48,29 +46,11 @@ export class SettingsSheet {
     const handle = document.createElement('div')
     handle.className = 'sheet-handle'
 
-    const nav = document.createElement('div')
-    nav.className = 'sheet-nav'
-
-    this.back = document.createElement('button')
-    this.back.type = 'button'
-    this.back.className = 'sheet-icon gone'
-    this.back.setAttribute('aria-label', 'Back')
-    this.back.appendChild(backIcon())
-    this.back.addEventListener('click', () => this.showDelay())
-
     this.title = document.createElement('h2')
     this.title.className = 'sheet-title'
     this.title.textContent = 'Delay'
 
-    this.help = document.createElement('button')
-    this.help.type = 'button'
-    this.help.className = 'sheet-icon'
-    this.help.setAttribute('aria-label', 'Gestures')
-    this.help.appendChild(helpIcon())
-    this.help.addEventListener('click', () => this.showGestures())
-
-    nav.append(this.back, this.title, this.help)
-    header.append(handle, nav)
+    header.append(handle, this.title)
     this.attachSwipeDown(header)
 
     this.delayView = document.createElement('div')
@@ -125,16 +105,12 @@ export class SettingsSheet {
 
   private showGestures(): void {
     this.title.textContent = 'Gestures'
-    this.back.classList.remove('gone')
-    this.help.classList.add('gone')
     this.delayView.hidden = true
     this.gesturesView.hidden = false
   }
 
   private showDelay(): void {
     this.title.textContent = 'Delay'
-    this.back.classList.add('gone')
-    this.help.classList.remove('gone')
     this.gesturesView.hidden = true
     this.delayView.hidden = false
   }
@@ -157,8 +133,9 @@ export class SettingsSheet {
     })
   }
 
-  open(): void {
-    this.showDelay()
+  open(view: 'delay' | 'gestures' = 'delay'): void {
+    if (view === 'gestures') this.showGestures()
+    else this.showDelay()
     this.element.classList.add('open')
     document.body.classList.add('sheet-open')
   }
