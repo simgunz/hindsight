@@ -8,6 +8,7 @@ import { DelayIndicator } from './delayIndicator'
 import { DelayPipeline, pickCodec } from './delayPipeline'
 import { loadDelaySeconds, saveDelaySeconds } from './delayStore'
 import { DelayWheel } from './delayWheel'
+import { createFrameNormalizer } from './frameNormalizer'
 import { createFrameSource, type FrameSource } from './frameSource'
 import { PresetBar } from './presetBar'
 import { loadPresets, savePresets } from './presetStore'
@@ -207,10 +208,15 @@ async function startMirror(app: HTMLElement): Promise<void> {
     pipeline = session
     activeTrack = track
     if (DEBUG) Reflect.set(window, 'hindsightPipeline', session)
-    source = createFrameSource(track)
-    source.start((frame) => {
-      session.encode(frame)
-      frame.close()
+    const activeSource = createFrameSource(track)
+    source = activeSource
+    const normalizer = createFrameNormalizer((frame) =>
+      activeSource.rotationOf(frame),
+    )
+    activeSource.start((frame) => {
+      const upright = normalizer.normalize(frame)
+      session.encode(upright)
+      upright.close()
     })
   }
 

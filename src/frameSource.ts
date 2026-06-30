@@ -1,6 +1,9 @@
+import { screenAngleToRotation } from './orientation'
+
 export interface FrameSource {
   start(onFrame: (frame: VideoFrame) => void): void
   stop(): void
+  rotationOf(frame: VideoFrame): number
 }
 
 export function createFrameSource(track: MediaStreamTrack): FrameSource {
@@ -39,6 +42,10 @@ class ProcessorFrameSource implements FrameSource {
     void this.reader?.cancel()
     this.reader = null
   }
+
+  rotationOf(frame: VideoFrame): number {
+    return frame.rotation ?? 0
+  }
 }
 
 class VideoElementFrameSource implements FrameSource {
@@ -73,5 +80,9 @@ class VideoElementFrameSource implements FrameSource {
       this.video.srcObject = null
       this.video = null
     }
+  }
+
+  rotationOf(_frame: VideoFrame): number {
+    return screenAngleToRotation(screen.orientation?.angle ?? 0)
   }
 }
