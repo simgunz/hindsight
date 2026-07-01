@@ -11,7 +11,6 @@ export function createFrameNormalizer(
 }
 
 class CanvasFrameNormalizer implements FrameNormalizer {
-  private rotation: number | null = null
   private canvas: OffscreenCanvas | null = null
   private ctx: OffscreenCanvasRenderingContext2D | null = null
   private readonly rotationOf: (frame: VideoFrame) => number
@@ -21,8 +20,7 @@ class CanvasFrameNormalizer implements FrameNormalizer {
   }
 
   normalize(frame: VideoFrame): VideoFrame {
-    if (this.rotation === null) this.rotation = this.rotationOf(frame) % 360
-    const rotation = this.rotation
+    const rotation = ((this.rotationOf(frame) % 360) + 360) % 360
     if (rotation === 0) return frame
 
     const sourceWidth = frame.displayWidth
@@ -53,6 +51,9 @@ class CanvasFrameNormalizer implements FrameNormalizer {
     if (!this.canvas) {
       this.canvas = new OffscreenCanvas(width, height)
       this.ctx = this.canvas.getContext('2d')
+    } else if (this.canvas.width !== width || this.canvas.height !== height) {
+      this.canvas.width = width
+      this.canvas.height = height
     }
     if (!this.ctx) throw new Error('OffscreenCanvas 2D context unavailable')
     return this.ctx
