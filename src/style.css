@@ -1119,3 +1119,48 @@ body.walkthrough-open .build-overlay {
   font-size: 1.6rem;
   font-weight: 700;
 }
+
+/* Short viewports (landscape phones) lack the height for the full sheet, so
+   compact it enough to fit without scrolling. */
+@media (orientation: landscape) and (max-height: 540px) {
+  .sheet-panel {
+    gap: 0.4rem;
+    padding: 0.25rem 1rem calc(env(safe-area-inset-bottom, 0px) + 0.6rem);
+  }
+
+  .sheet-header {
+    padding-bottom: 0.25rem;
+  }
+
+  .sheet-handle {
+    margin: 0.25rem 0 0.15rem;
+  }
+
+  .sheet-view {
+    gap: 0.5rem;
+  }
+
+  .wheel {
+    height: 132px;
+  }
+
+  .gesture-row {
+    padding: 0.32rem 0.25rem;
+  }
+
+  .gesture-glyph {
+    width: 1.8rem;
+    height: 1.8rem;
+    font-size: 0.85rem;
+  }
+
+  .gesture-glyph svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .gesture-replay {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+  }
+}
