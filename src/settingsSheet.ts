@@ -88,6 +88,9 @@ export class SettingsSheet {
     replay.append(replayLabel)
     replay.addEventListener('click', () => {
       this.close()
+      // Replaying the walkthrough re-teaches everything, including the
+      // preset coachmark, so it shows again next time the sheet opens.
+      localStorage.removeItem(PRESET_HINT_KEY)
       onReplay?.()
     })
     this.gesturesView.append(replay)
