@@ -1032,6 +1032,21 @@ body.walkthrough-open .build-overlay {
   border-top: 9px solid #1b2028;
 }
 
+/* With no saved presets the + is alone at the left of the bar, so anchor the
+   balloon left and point its arrow down at the + instead of the center. */
+.preset-coach.at-add {
+  left: 0;
+  transform: translateX(0) translateY(6px);
+}
+
+.preset-coach.at-add.show {
+  transform: translateX(0) translateY(0);
+}
+
+.preset-coach.at-add .coach-arrow {
+  left: 1.5rem;
+}
+
 .preset-bar {
   display: flex;
   gap: 0.5rem;

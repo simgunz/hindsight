@@ -32,6 +32,7 @@ export class SettingsSheet {
   private readonly delayView: HTMLDivElement
   private readonly gesturesView: HTMLDivElement
   private readonly coach: HTMLDivElement | null = null
+  private readonly presetsEl: HTMLElement | null = null
 
   constructor(
     wheel: DelayWheel,
@@ -68,6 +69,7 @@ export class SettingsSheet {
       const dock = document.createElement('div')
       dock.className = 'preset-dock'
       this.coach = this.buildCoach()
+      this.presetsEl = presetsEl
       dock.append(this.coach, presetsEl)
       this.delayView.append(dock)
     }
@@ -153,6 +155,8 @@ export class SettingsSheet {
   private maybeShowCoach(): void {
     if (!this.coach) return
     if (localStorage.getItem(PRESET_HINT_KEY) === '1') return
+    const noPresets = !this.presetsEl?.querySelector('.preset-chip:not(.add)')
+    this.coach.classList.toggle('at-add', noPresets)
     this.coach.classList.add('show')
   }
 
