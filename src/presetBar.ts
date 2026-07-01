@@ -197,7 +197,7 @@ export class PresetBar {
     const save = document.createElement('button')
     save.type = 'button'
     save.className = 'preset-save'
-    save.textContent = `Save ${this.currentSeconds}s`
+    save.textContent = 'Save'
 
     const cancel = document.createElement('button')
     cancel.type = 'button'
