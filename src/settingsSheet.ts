@@ -7,6 +7,13 @@ interface GestureRow {
   desc: string
 }
 
+const PRESET_HINT_KEY = 'hindsight.presetHintSeen'
+
+const PRESET_HINTS: [glyph: string, text: string][] = [
+  ['＋', 'saves the current delay'],
+  ['◉', 'hold a preset to remove'],
+]
+
 const GESTURES: GestureRow[] = [
   { glyph: '↑', label: 'Swipe up', desc: 'Delay & presets' },
   { glyph: '⊙⊙', label: 'Double-tap', desc: 'Live ↔ your delay' },
@@ -24,6 +31,7 @@ export class SettingsSheet {
   private readonly title: HTMLHeadingElement
   private readonly delayView: HTMLDivElement
   private readonly gesturesView: HTMLDivElement
+  private readonly coach: HTMLDivElement | null = null
 
   constructor(
     wheel: DelayWheel,
@@ -56,7 +64,13 @@ export class SettingsSheet {
     this.delayView = document.createElement('div')
     this.delayView.className = 'sheet-view'
     this.delayView.append(wheel.element)
-    if (presetsEl) this.delayView.append(presetsEl)
+    if (presetsEl) {
+      const dock = document.createElement('div')
+      dock.className = 'preset-dock'
+      this.coach = this.buildCoach()
+      dock.append(this.coach, presetsEl)
+      this.delayView.append(dock)
+    }
 
     this.gesturesView = document.createElement('div')
     this.gesturesView.className = 'sheet-view gestures'
@@ -103,6 +117,51 @@ export class SettingsSheet {
     return el
   }
 
+  private buildCoach(): HTMLDivElement {
+    const coach = document.createElement('div')
+    coach.className = 'preset-coach'
+
+    for (const [glyph, text] of PRESET_HINTS) {
+      const row = document.createElement('div')
+      row.className = 'coach-row'
+      const g = document.createElement('span')
+      g.className = 'coach-glyph'
+      g.textContent = glyph
+      const t = document.createElement('span')
+      t.className = 'coach-text'
+      t.textContent = text
+      row.append(g, t)
+      coach.append(row)
+    }
+
+    const got = document.createElement('button')
+    got.type = 'button'
+    got.className = 'coach-dismiss'
+    got.textContent = 'Got it'
+    got.addEventListener('click', (event) => {
+      event.stopPropagation()
+      this.dismissCoach()
+    })
+
+    const arrow = document.createElement('div')
+    arrow.className = 'coach-arrow'
+
+    coach.append(got, arrow)
+    return coach
+  }
+
+  private maybeShowCoach(): void {
+    if (!this.coach) return
+    if (localStorage.getItem(PRESET_HINT_KEY) === '1') return
+    this.coach.classList.add('show')
+  }
+
+  private dismissCoach(): void {
+    if (!this.coach?.classList.contains('show')) return
+    this.coach.classList.remove('show')
+    localStorage.setItem(PRESET_HINT_KEY, '1')
+  }
+
   private showGestures(): void {
     this.title.textContent = 'Gestures'
     this.delayView.hidden = true
@@ -113,6 +172,7 @@ export class SettingsSheet {
     this.title.textContent = 'Delay'
     this.gesturesView.hidden = true
     this.delayView.hidden = false
+    this.maybeShowCoach()
   }
 
   private attachSwipeDown(target: HTMLElement): void {
@@ -141,6 +201,7 @@ export class SettingsSheet {
   }
 
   close(): void {
+    this.dismissCoach()
     this.element.classList.remove('open')
     document.body.classList.remove('sheet-open')
   }

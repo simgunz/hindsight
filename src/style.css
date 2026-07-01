@@ -945,6 +945,93 @@ body.walkthrough-open .build-overlay {
   height: 1.1rem;
 }
 
+.preset-dock {
+  position: relative;
+  width: 100%;
+  max-width: 24rem;
+}
+
+.preset-coach {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.7rem);
+  transform: translateX(-50%) translateY(6px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: min(20rem, calc(100vw - 2rem));
+  padding: 0.85rem 0.95rem 0.7rem;
+  background: #1b2028;
+  border: 1px solid var(--accent-dim);
+  border-radius: 0.9rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.preset-coach.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.coach-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.coach-glyph {
+  flex: none;
+  width: 1.8rem;
+  height: 1.8rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.5rem;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--mono-display);
+  font-size: 0.95rem;
+}
+
+.coach-text {
+  font-family: var(--mono-display);
+  font-weight: 300;
+  font-size: 0.85rem;
+  color: #c7d4d9;
+  white-space: nowrap;
+}
+
+.coach-dismiss {
+  align-self: flex-end;
+  margin-top: 0.15rem;
+  padding: 0.35rem 1rem;
+  font-family: var(--mono-display);
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: #04121a;
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.coach-arrow {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 9px solid #1b2028;
+}
+
 .preset-bar {
   display: flex;
   gap: 0.5rem;
