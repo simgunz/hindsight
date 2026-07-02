@@ -13,6 +13,27 @@ implementation.
 |----|----------|----------------|-------|
 | OQ-I3 | Orientation: support both vs lock to one | After trying the propped setup | NFR-006 assumes both |
 
+## Features Under Discussion
+
+### OQ-F1 — Slow-motion review
+Design sketched, not finalized; not yet a requirement. Serves
+[US-013](user-stories/index.md#us-013-review-a-moment-in-slow-motion).
+
+**Current thinking:**
+
+- Slow-mo is a *bounded review action, not a mode*: from a paused frame, play forward
+  at reduced speed, then snap back to the base delay once it catches up to live.
+  Open-ended slow playback would drift ever further behind live (buffer constraint).
+- Surfaced in the pause strip beside the scrub bar as a single `▶ 0.5×` control, so it
+  reuses the existing pause/scrub context rather than adding new chrome.
+
+**Open decisions:**
+
+- Speed set: only `0.5×`, or a `0.5× / 0.25×` cycle?
+- Behavior at catch-up: hard snap to base delay, or ease/notify first?
+- Does slow-mo also apply while scrubbing, or only forward-play from a paused frame?
+- Interaction with the reference-guides overlay when both are active — any conflict?
+
 ## Resolved Questions
 
 ### OQ-1: Mode-switch gesture

@@ -11,7 +11,9 @@ ID(s) it serves. Functional requirements are grouped by feature area in the page
 under this section.
 
 > **Status:** FR-001–FR-019 are built. FR-020–FR-029 (Reference Guides) are `approved`
-> and being implemented. The per-item table records each item's status.
+> and being implemented. Slow-motion review (US-013) is still under discussion with no
+> requirements drafted; see [OQ-F1](../open-questions.md#oq-f1-slow-motion-review). The
+> per-item table records each item's status.
 
 ## Functional requirements
 

@@ -36,6 +36,7 @@ gallery, watch it, and delete it.
 | US-010 | Learn the gestures | Onboarding | Important | implemented |
 | US-011 | Mark reference lines and points on the view | Reference guides | Nice-to-have | approved |
 | US-012 | Adjust, hide, and keep my reference guides | Reference guides | Nice-to-have | approved |
+| US-013 | Review a moment in slow motion | Playback | Nice-to-have | draft |
 
 ## Delayed Mirror
 
@@ -88,6 +89,18 @@ I can leave rewatch mode and resume the normal delayed loop in one gesture.
 
 *Example: after rewatching a rep a few times, I double-tap and the screen is back
 to showing me 60s behind live.*
+
+### US-013 — Review a moment in slow motion
+**As an** athlete, **I want** to replay a moment at reduced speed, **so that** I can
+see fast form breaks that are hard to catch at real time (e.g. the sticking point of a
+lift, or release timing in archery).
+
+*Example: I pause at the sticking point, play forward at half speed, and watch the bar
+path slowly enough to spot the stall.*
+
+> **Under discussion.** The interaction (slow-mo as a bounded review action from pause
+> that snaps back to the base delay) is sketched but not finalized, and no requirements
+> are drafted yet. See [OQ-F1](../open-questions.md#oq-f1-slow-motion-review).
 
 ## Live Mirror
 
