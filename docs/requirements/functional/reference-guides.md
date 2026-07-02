@@ -1,6 +1,6 @@
 ---
 id: req-reference-guides
-status: approved
+status: implemented
 ---
 
 # Requirements — Reference Guides
@@ -10,7 +10,7 @@ form alignment against a fixed reference. Serves
 [US-011](../../user-stories/index.md#us-011-mark-reference-lines-and-points-on-the-view)
 and [US-012](../../user-stories/index.md#us-012-adjust-hide-and-keep-my-reference-guides).
 
-> **Status:** `approved` — signed off, ready to implement.
+> **Status:** `implemented` — built and verified.
 
 **Design note — a deliberate visible control.** Guides intentionally introduce the
 app's first persistent on-screen button — a considered exception to the gesture-first

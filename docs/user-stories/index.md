@@ -34,8 +34,8 @@ gallery, watch it, and delete it.
 | US-008 | Live mirrored view | Live mirror | Nice-to-have | implemented |
 | US-009 | Minimal, distraction-free, gesture-driven UI | Experience | Essential | implemented |
 | US-010 | Learn the gestures | Onboarding | Important | implemented |
-| US-011 | Mark reference lines and points on the view | Reference guides | Nice-to-have | approved |
-| US-012 | Adjust, hide, and keep my reference guides | Reference guides | Nice-to-have | approved |
+| US-011 | Mark reference lines and points on the view | Reference guides | Nice-to-have | implemented |
+| US-012 | Adjust, hide, and keep my reference guides | Reference guides | Nice-to-have | implemented |
 | US-013 | Review a moment in slow motion | Playback | Nice-to-have | draft |
 
 ## Delayed Mirror
