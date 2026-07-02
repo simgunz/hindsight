@@ -1283,6 +1283,7 @@ body.walkthrough-open .build-overlay {
   inset: 0;
   z-index: 2;
   pointer-events: none;
+  touch-action: none;
 }
 
 .guides-overlay.hidden {
@@ -1364,7 +1365,7 @@ circle.g-hit {
   place-items: center;
   padding: 0;
   margin: 0;
-  transform: translate(-50%, -170%);
+  transform: translate(-50%, -50%);
   color: #fff;
   background: rgba(210, 45, 45, 0.92);
   border: none;
@@ -1498,6 +1499,11 @@ circle.g-hit {
 
 .g-tool:hover {
   background: rgba(255, 255, 255, 0.12);
+}
+
+.g-tool.active {
+  background: var(--accent);
+  color: #08131a;
 }
 
 .g-sep {

@@ -1,4 +1,4 @@
-import { snapLine } from './guideGeometry'
+import { type SnapAxis, snapLine } from './guideGeometry'
 import { type Guide, loadGuides, saveGuides } from './guidesStore'
 import {
   closeIcon,
@@ -13,8 +13,22 @@ import {
 const SVG_NS = 'http://www.w3.org/2000/svg'
 const HINT_KEY = 'hindsight.guidesHintSeen'
 const WALKTHROUGH_KEY = 'hindsight.walkthroughSeen'
+const DRAW_MIN_PX = 6
 
 type Mode = 'idle' | 'add-line' | 'add-point'
+
+type Action =
+  | {
+      kind: 'draw'
+      ax: number
+      ay: number
+      bx: number
+      by: number
+      snap: SnapAxis
+      moved: boolean
+    }
+  | { kind: 'move'; startX: number; startY: number; orig: Guide }
+  | { kind: 'end'; end: 'a' | 'b' }
 
 export class Guides {
   private readonly overlay: HTMLDivElement
@@ -30,12 +44,8 @@ export class Guides {
   private mode: Mode = 'idle'
   private barOpen = false
   private visible = true
-  private pendingA: { x: number; y: number } | null = null
   private selected: number | null = null
-  private drag:
-    | { kind: 'move'; startX: number; startY: number; orig: Guide }
-    | { kind: 'end'; end: 'a' | 'b' }
-    | null = null
+  private action: Action | null = null
 
   constructor(parent: HTMLElement) {
     this.guides = loadGuides()
@@ -110,8 +120,8 @@ export class Guides {
     parent.append(this.overlay, this.controls)
 
     window.addEventListener('resize', () => this.render())
-    window.addEventListener('pointermove', (e) => this.onDragMove(e))
-    window.addEventListener('pointerup', () => this.onDragEnd())
+    window.addEventListener('pointermove', (e) => this.onPointerMove(e))
+    window.addEventListener('pointerup', () => this.onPointerUp())
     this.render()
     this.maybeShowCoach()
   }
@@ -197,21 +207,32 @@ export class Guides {
     if (!this.visible) this.toggleVisible()
     this.deselect()
     this.mode = mode
-    this.pendingA = null
+    this.action = null
     this.overlay.classList.add('adding')
     this.hint.hidden = false
     this.hint.textContent =
-      mode === 'add-line' ? 'Tap two points' : 'Tap to place a point'
+      mode === 'add-line' ? 'Drag to draw a line' : 'Tap to place a point'
+    this.updateToolState()
     this.render()
   }
 
   private cancelAdd(): void {
     if (this.mode === 'idle') return
     this.mode = 'idle'
-    this.pendingA = null
+    this.action = null
     this.overlay.classList.remove('adding')
     this.hint.hidden = true
+    this.updateToolState()
     this.render()
+  }
+
+  private updateToolState(): void {
+    this.bar
+      .querySelector('.g-line-tool')
+      ?.classList.toggle('active', this.mode === 'add-line')
+    this.bar
+      .querySelector('.g-point-tool')
+      ?.classList.toggle('active', this.mode === 'add-point')
   }
 
   private onOverlayDown(event: PointerEvent): void {
@@ -233,23 +254,108 @@ export class Guides {
       this.cancelAdd()
       return
     }
-    // add-line: two taps
-    if (!this.pendingA) {
-      this.pendingA = { x: px, y: py }
+    // add-line: press-drag-release
+    this.action = {
+      kind: 'draw',
+      ax: px,
+      ay: py,
+      bx: px,
+      by: py,
+      snap: null,
+      moved: false,
+    }
+    this.render()
+  }
+
+  private onGuideDown(event: PointerEvent, i: number): void {
+    if (this.mode !== 'idle') return
+    event.stopPropagation()
+    this.select(i)
+    this.action = {
+      kind: 'move',
+      startX: event.clientX,
+      startY: event.clientY,
+      orig: { ...this.guides[i] },
+    }
+  }
+
+  private onHandleDown(event: PointerEvent, end: 'a' | 'b'): void {
+    event.stopPropagation()
+    this.action = { kind: 'end', end }
+  }
+
+  private onPointerMove(event: PointerEvent): void {
+    const a = this.action
+    if (!a) return
+    const rect = this.svg.getBoundingClientRect()
+    if (a.kind === 'draw') {
+      const px = event.clientX - rect.left
+      const py = event.clientY - rect.top
+      const s = snapLine(a.ax, a.ay, px, py)
+      a.bx = s.bx
+      a.by = s.by
+      a.snap = s.snap
+      if (Math.hypot(px - a.ax, py - a.ay) >= DRAW_MIN_PX) a.moved = true
       this.render()
       return
     }
-    const { bx, by, snap } = snapLine(this.pendingA.x, this.pendingA.y, px, py)
-    this.guides.push({
-      type: 'line',
-      ax: this.pendingA.x / rect.width,
-      ay: this.pendingA.y / rect.height,
-      bx: bx / rect.width,
-      by: by / rect.height,
-      snap,
-    })
-    this.commit()
-    this.cancelAdd()
+    if (this.selected === null) return
+    const g = this.guides[this.selected]
+    if (a.kind === 'move') {
+      const dxN = (event.clientX - a.startX) / rect.width
+      const dyN = (event.clientY - a.startY) / rect.height
+      const o = a.orig
+      if (g.type === 'line' && o.type === 'line') {
+        g.ax = o.ax + dxN
+        g.ay = o.ay + dyN
+        g.bx = o.bx + dxN
+        g.by = o.by + dyN
+      } else if (g.type === 'point' && o.type === 'point') {
+        g.x = o.x + dxN
+        g.y = o.y + dyN
+      }
+    } else if (g.type === 'line') {
+      const mx = event.clientX - rect.left
+      const my = event.clientY - rect.top
+      const anchorX = (a.end === 'a' ? g.bx : g.ax) * rect.width
+      const anchorY = (a.end === 'a' ? g.by : g.ay) * rect.height
+      const s = snapLine(anchorX, anchorY, mx, my)
+      if (a.end === 'a') {
+        g.ax = s.bx / rect.width
+        g.ay = s.by / rect.height
+      } else {
+        g.bx = s.bx / rect.width
+        g.by = s.by / rect.height
+      }
+      g.snap = s.snap
+    }
+    this.render()
+  }
+
+  private onPointerUp(): void {
+    const a = this.action
+    if (!a) return
+    this.action = null
+    if (a.kind === 'draw') {
+      if (a.moved) {
+        const rect = this.svg.getBoundingClientRect()
+        this.guides.push({
+          type: 'line',
+          ax: a.ax / rect.width,
+          ay: a.ay / rect.height,
+          bx: a.bx / rect.width,
+          by: a.by / rect.height,
+          snap: a.snap,
+        })
+        this.commit()
+        this.cancelAdd()
+      } else {
+        // A tap with no drag: keep the tool armed, discard the stub.
+        this.render()
+      }
+      return
+    }
+    saveGuides(this.guides)
   }
 
   private toggleVisible(): void {
@@ -283,10 +389,13 @@ export class Guides {
     this.guides.forEach((g, i) => {
       this.svg.appendChild(this.guideEl(g, i, w, h))
     })
-    if (this.pendingA) {
+    const a = this.action
+    if (a?.kind === 'draw' && a.moved) {
       this.svg.appendChild(
-        this.pointDraw(this.pendingA.x, this.pendingA.y, true),
+        this.lineSeg('g-draw g-line', a.ax, a.ay, a.bx, a.by, a.snap != null),
       )
+      this.svg.appendChild(this.pointDraw(a.ax, a.ay, true))
+      this.svg.appendChild(this.pointDraw(a.bx, a.by, true))
     }
     this.positionDelete(rect, w, h)
   }
@@ -343,9 +452,9 @@ export class Guides {
     c.setAttribute('class', 'g-handle')
     c.setAttribute('cx', String(cx))
     c.setAttribute('cy', String(cy))
-    c.setAttribute('r', '9')
+    c.setAttribute('r', '11')
     c.addEventListener('pointerdown', (e) =>
-      this.beginEnd(e as PointerEvent, end),
+      this.onHandleDown(e as PointerEvent, end),
     )
     return c
   }
@@ -377,72 +486,14 @@ export class Guides {
       return
     }
     const g = this.guides[this.selected]
-    const ax = g.type === 'line' ? ((g.ax + g.bx) / 2) * w : g.x * w
-    const ay = g.type === 'line' ? ((g.ay + g.by) / 2) * h : g.y * h
-    this.deleteBtn.style.left = `${rect.left + ax}px`
-    this.deleteBtn.style.top = `${rect.top + ay}px`
+    // Pin to the top-right corner of the guide's bounding box, viewport-clamped.
+    const maxX = g.type === 'line' ? Math.max(g.ax, g.bx) * w : g.x * w
+    const minY = g.type === 'line' ? Math.min(g.ay, g.by) * h : g.y * h
+    const cx = clamp(rect.left + maxX + 20, 24, window.innerWidth - 24)
+    const cy = clamp(rect.top + minY - 20, 24, window.innerHeight - 24)
+    this.deleteBtn.style.left = `${cx}px`
+    this.deleteBtn.style.top = `${cy}px`
     this.deleteBtn.hidden = false
-  }
-
-  private onGuideDown(event: PointerEvent, i: number): void {
-    if (this.mode !== 'idle') return
-    event.stopPropagation()
-    if (this.selected !== i) {
-      this.select(i)
-      return
-    }
-    this.drag = {
-      kind: 'move',
-      startX: event.clientX,
-      startY: event.clientY,
-      orig: { ...this.guides[i] },
-    }
-  }
-
-  private beginEnd(event: PointerEvent, end: 'a' | 'b'): void {
-    event.stopPropagation()
-    this.drag = { kind: 'end', end }
-  }
-
-  private onDragMove(event: PointerEvent): void {
-    if (!this.drag || this.selected === null) return
-    const g = this.guides[this.selected]
-    const rect = this.svg.getBoundingClientRect()
-    if (this.drag.kind === 'move') {
-      const dxN = (event.clientX - this.drag.startX) / rect.width
-      const dyN = (event.clientY - this.drag.startY) / rect.height
-      const o = this.drag.orig
-      if (g.type === 'line' && o.type === 'line') {
-        g.ax = o.ax + dxN
-        g.ay = o.ay + dyN
-        g.bx = o.bx + dxN
-        g.by = o.by + dyN
-      } else if (g.type === 'point' && o.type === 'point') {
-        g.x = o.x + dxN
-        g.y = o.y + dyN
-      }
-    } else if (g.type === 'line') {
-      const mx = event.clientX - rect.left
-      const my = event.clientY - rect.top
-      const anchorX = (this.drag.end === 'a' ? g.bx : g.ax) * rect.width
-      const anchorY = (this.drag.end === 'a' ? g.by : g.ay) * rect.height
-      const s = snapLine(anchorX, anchorY, mx, my)
-      if (this.drag.end === 'a') {
-        g.ax = s.bx / rect.width
-        g.ay = s.by / rect.height
-      } else {
-        g.bx = s.bx / rect.width
-        g.by = s.by / rect.height
-      }
-      g.snap = s.snap
-    }
-    this.render()
-  }
-
-  private onDragEnd(): void {
-    if (!this.drag) return
-    this.drag = null
-    saveGuides(this.guides)
   }
 
   private select(i: number): void {
@@ -465,4 +516,8 @@ export class Guides {
     this.overlay.classList.remove('has-selection')
     this.commit()
   }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
 }
