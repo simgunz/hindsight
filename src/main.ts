@@ -22,6 +22,7 @@ import { StatsOverlay } from './stats'
 import { Walkthrough } from './walkthrough'
 
 const DEFAULT_DELAY_SECONDS = 20
+const REBUFFER_AFTER_HIDDEN_MS = 1500
 const FRAMERATE = 30
 const BITRATE = 3_000_000
 const KEY_FRAME_INTERVAL = 60
@@ -286,14 +287,27 @@ async function startMirror(app: HTMLElement): Promise<void> {
     )
   }
 
-  function onResume(): void {
-    if (document.visibilityState !== 'visible') return
+  let hiddenAt = 0
+  function onVisibility(): void {
+    if (document.visibilityState === 'hidden') {
+      hiddenAt = performance.now()
+      return
+    }
     void requestWakeLock()
-    if (activeTrack?.readyState === 'ended' && !switching) {
+    const hiddenMs = hiddenAt ? performance.now() - hiddenAt : 0
+    hiddenAt = 0
+    if (switching) return
+    if (activeTrack?.readyState === 'ended') {
+      // The OS released the camera; reacquire from scratch.
       void reacquire(camera, 'Reconnecting…')
+    } else if (pipeline && hiddenMs >= REBUFFER_AFTER_HIDDEN_MS) {
+      // Frames stopped while backgrounded, leaving a stale gap that would show
+      // as a frozen frame. Drop it and re-ramp so the countdown makes the
+      // re-buffering visible.
+      pipeline.rebuffer(camera === 'user' ? 0 : baseDelayMs)
     }
   }
-  document.addEventListener('visibilitychange', onResume)
+  document.addEventListener('visibilitychange', onVisibility)
 
   if (!walkthroughSeen) cameraTargets.environment = 0
 

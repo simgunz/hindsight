@@ -169,6 +169,25 @@ export class DelayPipeline {
     this.decoder.close()
   }
 
+  /** Discard the buffered footage and re-ramp to `targetMs`. Used on resume from
+   * the background, where the camera stopped delivering frames and the buffer is
+   * now a stale gap that would otherwise show a frozen frame. Forces a keyframe so
+   * the decoder recovers, and the empty buffer re-triggers the build countdown. */
+  rebuffer(targetMs: number): void {
+    this.decoder.reset()
+    this.decoderConfig = null
+    this.buffer.clear()
+    this.sizeSet = false
+    this.framesSinceKey = this.opts.keyFrameInterval
+    this.lastTargetWall = null
+    this.seekTargetTs = null
+    this.committedDelayMs = 0
+    this.captureWall.clear()
+    this.decodeWall.clear()
+    this.targetOffsetMs = targetMs
+    this.mode = 'playing'
+  }
+
   togglePause(): boolean {
     if (this.mode === 'paused') {
       const oldest = this.buffer.oldestTime ?? this.cursorTime
