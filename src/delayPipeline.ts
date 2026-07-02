@@ -219,6 +219,7 @@ export class DelayPipeline {
     this.mode = 'playing'
     this.scrubPending = false
     this.targetOffsetMs = Math.max(0, performance.now() - this.cursorTime)
+    this.growRetention(this.targetOffsetMs)
   }
 
   toggleHome(): boolean {
@@ -240,10 +241,19 @@ export class DelayPipeline {
   setBaseDelay(ms: number): void {
     this.baseDelayMs = ms
     this.targetOffsetMs = ms
-    this.retentionWindowMs = Math.min(
+    this.growRetention(ms)
+  }
+
+  /** Grow the retention window to keep `delayMs` plus headroom of footage, never
+   * shrinking, capped at the memory ceiling. Driven by both the wheel (base
+   * delay) and scrubbing, so swiping to a deeper delay also extends the buffer. */
+  private growRetention(delayMs: number): void {
+    const next = Math.min(
       MAX_WINDOW_MS,
-      Math.max(this.retentionWindowMs, ms + HEADROOM_MS),
+      Math.max(this.retentionWindowMs, delayMs + HEADROOM_MS),
     )
+    if (next === this.retentionWindowMs) return
+    this.retentionWindowMs = next
     this.buffer.setMaxWindow(this.retentionWindowMs)
   }
 
@@ -407,6 +417,9 @@ export class DelayPipeline {
     if (this.mode === 'paused') return this.pausedCursor
     if (this.mode === 'scrubbing') {
       const scrubTarget = this.scrubBaseTime + this.scrubDeltaMs
+      // Swiping toward a deeper delay grows the buffer too, so exploration keeps
+      // headroom and the wall recedes as footage accumulates.
+      this.growRetention(now - scrubTarget)
       return Math.min(now, Math.max(oldest, scrubTarget))
     }
     return this.nextCursorTime(now, oldest)
