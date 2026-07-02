@@ -11,6 +11,8 @@ import {
 } from './icons'
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
+const HINT_KEY = 'hindsight.guidesHintSeen'
+const WALKTHROUGH_KEY = 'hindsight.walkthroughSeen'
 
 type Mode = 'idle' | 'add-line' | 'add-point'
 
@@ -22,6 +24,7 @@ export class Guides {
   private readonly hint: HTMLDivElement
   private readonly eyeBtn: HTMLButtonElement
   private readonly deleteBtn: HTMLButtonElement
+  private readonly coach: HTMLDivElement
 
   private guides: Guide[]
   private mode: Mode = 'idle'
@@ -94,7 +97,15 @@ export class Guides {
       this.deleteSelected()
     })
 
-    this.controls.append(this.hint, button, this.bar, this.deleteBtn)
+    this.coach = this.buildCoach()
+
+    this.controls.append(
+      this.hint,
+      button,
+      this.bar,
+      this.deleteBtn,
+      this.coach,
+    )
 
     parent.append(this.overlay, this.controls)
 
@@ -102,6 +113,45 @@ export class Guides {
     window.addEventListener('pointermove', (e) => this.onDragMove(e))
     window.addEventListener('pointerup', () => this.onDragEnd())
     this.render()
+    this.maybeShowCoach()
+  }
+
+  private buildCoach(): HTMLDivElement {
+    const coach = document.createElement('div')
+    coach.className = 'guides-coach'
+    const text = document.createElement('div')
+    text.className = 'gc-text'
+    text.textContent = 'Add reference lines and points to check your form'
+    const got = document.createElement('button')
+    got.type = 'button'
+    got.className = 'gc-dismiss'
+    got.textContent = 'Got it'
+    got.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.dismissCoach()
+    })
+    const arrow = document.createElement('div')
+    arrow.className = 'gc-arrow'
+    coach.append(text, got, arrow)
+    return coach
+  }
+
+  private maybeShowCoach(): void {
+    if (localStorage.getItem(HINT_KEY) === '1') return
+    // Defer to the first-run walkthrough; show on a later launch instead of
+    // stacking on top of it.
+    if (localStorage.getItem(WALKTHROUGH_KEY) !== '1') return
+    if (this.guides.length > 0) {
+      localStorage.setItem(HINT_KEY, '1')
+      return
+    }
+    this.coach.classList.add('show')
+  }
+
+  private dismissCoach(): void {
+    if (!this.coach.classList.contains('show')) return
+    this.coach.classList.remove('show')
+    localStorage.setItem(HINT_KEY, '1')
   }
 
   private tool(
@@ -129,6 +179,7 @@ export class Guides {
     this.barOpen = true
     this.bar.hidden = false
     this.controls.classList.add('open')
+    this.dismissCoach()
   }
 
   private closeBar(): void {
