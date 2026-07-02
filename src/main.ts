@@ -352,7 +352,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
   })
   app.append(helpButton.element)
 
-  new Guides(app)
+  const guides = new Guides(app)
 
   const openControls = (): void => {
     sheet.open()
@@ -392,6 +392,7 @@ async function startMirror(app: HTMLElement): Promise<void> {
       cameraButton.element.hidden = !state.hasFrame
       helpButton.element.hidden = !state.hasFrame
       swipeHandle.hidden = !state.hasFrame
+      guides.setActive(state.hasFrame)
       if (!walkthroughSeen && !walkthroughTriggered && state.hasFrame) {
         walkthroughTriggered = true
         resolvingWalkthrough = true

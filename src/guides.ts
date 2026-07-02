@@ -117,6 +117,11 @@ export class Guides {
       this.coach,
     )
 
+    // Start hidden; main gates this on the delay buffer being ready, so guides
+    // never show over the "Starting camera…" status or the build countdown.
+    this.overlay.hidden = true
+    this.controls.hidden = true
+
     parent.append(this.overlay, this.controls)
 
     window.addEventListener('resize', () => this.render())
@@ -124,6 +129,14 @@ export class Guides {
     window.addEventListener('pointerup', () => this.onPointerUp())
     this.render()
     this.maybeShowCoach()
+  }
+
+  /** Gate all guide chrome on the app being ready (delay buffer warmed), so it
+   * stays consistent with the other controls during startup and the countdown. */
+  setActive(active: boolean): void {
+    this.overlay.hidden = !active
+    this.controls.hidden = !active
+    if (!active) this.cancelAdd()
   }
 
   private buildCoach(): HTMLDivElement {

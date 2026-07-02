@@ -1286,7 +1286,9 @@ body.walkthrough-open .build-overlay {
   touch-action: none;
 }
 
-.guides-overlay.hidden {
+.guides-overlay.hidden,
+.guides-overlay[hidden],
+.guides-controls[hidden] {
   display: none;
 }
 
