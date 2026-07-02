@@ -1331,19 +1331,27 @@ line.g-hit {
   stroke: transparent;
   stroke-width: 22;
   fill: none;
-  pointer-events: stroke;
 }
 
 circle.g-hit {
   fill: transparent;
+}
+
+/* Guides are grabbable only in edit mode (bar open); otherwise inert. */
+.guides-overlay.editing line.g-hit {
+  pointer-events: stroke;
+}
+
+.guides-overlay.editing circle.g-hit {
   pointer-events: fill;
 }
 
-.guides-overlay.adding .g-hit {
+.guides-overlay.adding line.g-hit,
+.guides-overlay.adding circle.g-hit {
   pointer-events: none;
 }
 
-.guides-overlay.has-selection .g-svg {
+.guides-overlay.editing.has-selection .g-svg {
   pointer-events: auto;
 }
 

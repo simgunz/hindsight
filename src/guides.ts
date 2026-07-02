@@ -202,6 +202,9 @@ export class Guides {
     this.barOpen = true
     this.bar.hidden = false
     this.controls.classList.add('open')
+    // Guides are only editable while the bar is open; the rest of the time they
+    // are inert references so they never steal a pause/scrub gesture.
+    this.overlay.classList.add('editing')
     this.dismissCoach()
   }
 
@@ -209,7 +212,9 @@ export class Guides {
     this.barOpen = false
     this.bar.hidden = true
     this.controls.classList.remove('open')
+    this.overlay.classList.remove('editing')
     this.cancelAdd()
+    this.deselect()
   }
 
   private startAdd(mode: Mode): void {
@@ -284,7 +289,7 @@ export class Guides {
   }
 
   private onGuideDown(event: PointerEvent, i: number): void {
-    if (this.mode !== 'idle') return
+    if (this.mode !== 'idle' || !this.barOpen) return
     event.stopPropagation()
     this.select(i)
     this.action = {
