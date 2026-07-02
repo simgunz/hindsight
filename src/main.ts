@@ -556,9 +556,9 @@ async function boot(app: HTMLElement): Promise<void> {
   renderCard(
     app,
     'Hindsight',
-    'Your video stays on this device, in memory only. Nothing is saved.',
+    'Glance up and watch your last rep, hands-free. Your video stays on this device, in memory only — nothing is saved.',
     { label: 'Get started', onClick: () => void startMirror(app) },
-    { accentTitle: true, motto: 'Your form, seconds later.' },
+    { accentTitle: true, motto: 'A mirror that runs a few seconds behind.' },
   )
 }
 
