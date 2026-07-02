@@ -1323,6 +1323,65 @@ body.walkthrough-open .build-overlay {
   opacity: 0.9;
 }
 
+line.g-hit {
+  stroke: transparent;
+  stroke-width: 22;
+  fill: none;
+  pointer-events: stroke;
+}
+
+circle.g-hit {
+  fill: transparent;
+  pointer-events: fill;
+}
+
+.guides-overlay.adding .g-hit {
+  pointer-events: none;
+}
+
+.guides-overlay.has-selection .g-svg {
+  pointer-events: auto;
+}
+
+.g-guide.selected .g-point {
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+
+.g-handle {
+  fill: var(--accent);
+  stroke: #08131a;
+  stroke-width: 2;
+  pointer-events: all;
+}
+
+.g-delete {
+  position: fixed;
+  z-index: 8;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  margin: 0;
+  transform: translate(-50%, -170%);
+  color: #fff;
+  background: rgba(210, 45, 45, 0.92);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.g-delete svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.g-delete[hidden] {
+  display: none;
+}
+
 .guides-controls {
   pointer-events: none;
 }

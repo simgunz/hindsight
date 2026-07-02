@@ -21,12 +21,18 @@ export class Guides {
   private readonly bar: HTMLDivElement
   private readonly hint: HTMLDivElement
   private readonly eyeBtn: HTMLButtonElement
+  private readonly deleteBtn: HTMLButtonElement
 
   private guides: Guide[]
   private mode: Mode = 'idle'
   private barOpen = false
   private visible = true
   private pendingA: { x: number; y: number } | null = null
+  private selected: number | null = null
+  private drag:
+    | { kind: 'move'; startX: number; startY: number; orig: Guide }
+    | { kind: 'end'; end: 'a' | 'b' }
+    | null = null
 
   constructor(parent: HTMLElement) {
     this.guides = loadGuides()
@@ -77,11 +83,24 @@ export class Guides {
     this.hint.className = 'guides-hint'
     this.hint.hidden = true
 
-    this.controls.append(this.hint, button, this.bar)
+    this.deleteBtn = document.createElement('button')
+    this.deleteBtn.type = 'button'
+    this.deleteBtn.className = 'g-delete'
+    this.deleteBtn.setAttribute('aria-label', 'Delete guide')
+    this.deleteBtn.appendChild(closeIcon())
+    this.deleteBtn.hidden = true
+    this.deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.deleteSelected()
+    })
+
+    this.controls.append(this.hint, button, this.bar, this.deleteBtn)
 
     parent.append(this.overlay, this.controls)
 
     window.addEventListener('resize', () => this.render())
+    window.addEventListener('pointermove', (e) => this.onDragMove(e))
+    window.addEventListener('pointerup', () => this.onDragEnd())
     this.render()
   }
 
@@ -125,6 +144,7 @@ export class Guides {
       return
     }
     if (!this.visible) this.toggleVisible()
+    this.deselect()
     this.mode = mode
     this.pendingA = null
     this.overlay.classList.add('adding')
@@ -144,7 +164,10 @@ export class Guides {
   }
 
   private onOverlayDown(event: PointerEvent): void {
-    if (this.mode === 'idle') return
+    if (this.mode === 'idle') {
+      if (this.selected !== null && event.target === this.svg) this.deselect()
+      return
+    }
     event.stopPropagation()
     const rect = this.svg.getBoundingClientRect()
     const px = event.clientX - rect.left
@@ -191,6 +214,8 @@ export class Guides {
   private clear(): void {
     if (this.guides.length === 0) return
     this.guides = []
+    this.selected = null
+    this.overlay.classList.remove('has-selection')
     this.commit()
   }
 
@@ -204,21 +229,49 @@ export class Guides {
     const w = rect.width || window.innerWidth
     const h = rect.height || window.innerHeight
     while (this.svg.firstChild) this.svg.removeChild(this.svg.firstChild)
-    for (const g of this.guides) {
-      if (g.type === 'line') {
-        this.svg.appendChild(
-          this.lineEl(g.ax * w, g.ay * h, g.bx * w, g.by * h, g.snap != null),
-        )
-      } else {
-        this.svg.appendChild(this.pointEl(g.x * w, g.y * h))
-      }
-    }
+    this.guides.forEach((g, i) => {
+      this.svg.appendChild(this.guideEl(g, i, w, h))
+    })
     if (this.pendingA) {
-      this.svg.appendChild(this.pointEl(this.pendingA.x, this.pendingA.y, true))
+      this.svg.appendChild(
+        this.pointDraw(this.pendingA.x, this.pendingA.y, true),
+      )
     }
+    this.positionDelete(rect, w, h)
   }
 
-  private lineEl(
+  private guideEl(g: Guide, i: number, w: number, h: number): SVGGElement {
+    const group = document.createElementNS(SVG_NS, 'g')
+    const selected = i === this.selected
+    group.setAttribute('class', selected ? 'g-guide selected' : 'g-guide')
+    if (g.type === 'line') {
+      const x1 = g.ax * w
+      const y1 = g.ay * h
+      const x2 = g.bx * w
+      const y2 = g.by * h
+      group.appendChild(this.lineSeg('g-hit', x1, y1, x2, y2, g.snap != null))
+      group.appendChild(
+        this.lineSeg('g-draw g-line', x1, y1, x2, y2, g.snap != null),
+      )
+      if (selected) {
+        group.appendChild(this.handle(x1, y1, 'a'))
+        group.appendChild(this.handle(x2, y2, 'b'))
+      }
+    } else {
+      const cx = g.x * w
+      const cy = g.y * h
+      group.appendChild(this.pointHit(cx, cy))
+      group.appendChild(this.pointDraw(cx, cy))
+    }
+    const hit = group.querySelector<SVGElement>('.g-hit')
+    hit?.addEventListener('pointerdown', (e) =>
+      this.onGuideDown(e as PointerEvent, i),
+    )
+    return group
+  }
+
+  private lineSeg(
+    cls: string,
     x1: number,
     y1: number,
     x2: number,
@@ -226,10 +279,7 @@ export class Guides {
     snapped: boolean,
   ): SVGLineElement {
     const line = document.createElementNS(SVG_NS, 'line')
-    line.setAttribute(
-      'class',
-      snapped ? 'g-draw g-line snapped' : 'g-draw g-line',
-    )
+    line.setAttribute('class', snapped ? `${cls} snapped` : cls)
     line.setAttribute('x1', String(x1))
     line.setAttribute('y1', String(y1))
     line.setAttribute('x2', String(x2))
@@ -237,7 +287,28 @@ export class Guides {
     return line
   }
 
-  private pointEl(cx: number, cy: number, pending = false): SVGCircleElement {
+  private handle(cx: number, cy: number, end: 'a' | 'b'): SVGCircleElement {
+    const c = document.createElementNS(SVG_NS, 'circle')
+    c.setAttribute('class', 'g-handle')
+    c.setAttribute('cx', String(cx))
+    c.setAttribute('cy', String(cy))
+    c.setAttribute('r', '9')
+    c.addEventListener('pointerdown', (e) =>
+      this.beginEnd(e as PointerEvent, end),
+    )
+    return c
+  }
+
+  private pointHit(cx: number, cy: number): SVGCircleElement {
+    const c = document.createElementNS(SVG_NS, 'circle')
+    c.setAttribute('class', 'g-hit')
+    c.setAttribute('cx', String(cx))
+    c.setAttribute('cy', String(cy))
+    c.setAttribute('r', '18')
+    return c
+  }
+
+  private pointDraw(cx: number, cy: number, pending = false): SVGCircleElement {
     const c = document.createElementNS(SVG_NS, 'circle')
     c.setAttribute(
       'class',
@@ -247,5 +318,100 @@ export class Guides {
     c.setAttribute('cy', String(cy))
     c.setAttribute('r', '6')
     return c
+  }
+
+  private positionDelete(rect: DOMRect, w: number, h: number): void {
+    if (this.selected === null || this.selected >= this.guides.length) {
+      this.deleteBtn.hidden = true
+      return
+    }
+    const g = this.guides[this.selected]
+    const ax = g.type === 'line' ? ((g.ax + g.bx) / 2) * w : g.x * w
+    const ay = g.type === 'line' ? ((g.ay + g.by) / 2) * h : g.y * h
+    this.deleteBtn.style.left = `${rect.left + ax}px`
+    this.deleteBtn.style.top = `${rect.top + ay}px`
+    this.deleteBtn.hidden = false
+  }
+
+  private onGuideDown(event: PointerEvent, i: number): void {
+    if (this.mode !== 'idle') return
+    event.stopPropagation()
+    if (this.selected !== i) {
+      this.select(i)
+      return
+    }
+    this.drag = {
+      kind: 'move',
+      startX: event.clientX,
+      startY: event.clientY,
+      orig: { ...this.guides[i] },
+    }
+  }
+
+  private beginEnd(event: PointerEvent, end: 'a' | 'b'): void {
+    event.stopPropagation()
+    this.drag = { kind: 'end', end }
+  }
+
+  private onDragMove(event: PointerEvent): void {
+    if (!this.drag || this.selected === null) return
+    const g = this.guides[this.selected]
+    const rect = this.svg.getBoundingClientRect()
+    if (this.drag.kind === 'move') {
+      const dxN = (event.clientX - this.drag.startX) / rect.width
+      const dyN = (event.clientY - this.drag.startY) / rect.height
+      const o = this.drag.orig
+      if (g.type === 'line' && o.type === 'line') {
+        g.ax = o.ax + dxN
+        g.ay = o.ay + dyN
+        g.bx = o.bx + dxN
+        g.by = o.by + dyN
+      } else if (g.type === 'point' && o.type === 'point') {
+        g.x = o.x + dxN
+        g.y = o.y + dyN
+      }
+    } else if (g.type === 'line') {
+      const mx = event.clientX - rect.left
+      const my = event.clientY - rect.top
+      const anchorX = (this.drag.end === 'a' ? g.bx : g.ax) * rect.width
+      const anchorY = (this.drag.end === 'a' ? g.by : g.ay) * rect.height
+      const s = snapLine(anchorX, anchorY, mx, my)
+      if (this.drag.end === 'a') {
+        g.ax = s.bx / rect.width
+        g.ay = s.by / rect.height
+      } else {
+        g.bx = s.bx / rect.width
+        g.by = s.by / rect.height
+      }
+      g.snap = s.snap
+    }
+    this.render()
+  }
+
+  private onDragEnd(): void {
+    if (!this.drag) return
+    this.drag = null
+    saveGuides(this.guides)
+  }
+
+  private select(i: number): void {
+    this.selected = i
+    this.overlay.classList.add('has-selection')
+    this.render()
+  }
+
+  private deselect(): void {
+    if (this.selected === null) return
+    this.selected = null
+    this.overlay.classList.remove('has-selection')
+    this.render()
+  }
+
+  private deleteSelected(): void {
+    if (this.selected === null) return
+    this.guides.splice(this.selected, 1)
+    this.selected = null
+    this.overlay.classList.remove('has-selection')
+    this.commit()
   }
 }
