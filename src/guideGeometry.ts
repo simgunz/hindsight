@@ -20,7 +20,7 @@ export function snapLine(
   ay: number,
   bx: number,
   by: number,
-  thresholdDeg = 8,
+  thresholdDeg = 4,
 ): SnappedLine {
   const dx = bx - ax
   const dy = by - ay
