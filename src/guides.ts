@@ -263,8 +263,9 @@ export class Guides {
         x: px / rect.width,
         y: py / rect.height,
       })
+      // Stay armed so several points can be placed in a row; the tool is
+      // disarmed by tapping it again or Close.
       this.commit()
-      this.cancelAdd()
       return
     }
     // add-line: press-drag-release
@@ -360,8 +361,9 @@ export class Guides {
           by: a.by / rect.height,
           snap: a.snap,
         })
+        // Stay armed so several lines can be drawn in a row; the tool is
+        // disarmed by tapping it again or Close.
         this.commit()
-        this.cancelAdd()
       } else {
         // A tap with no drag: keep the tool armed, discard the stub.
         this.render()
