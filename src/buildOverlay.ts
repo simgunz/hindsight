@@ -94,6 +94,12 @@ export class BuildOverlay {
     this.element = root
   }
 
+  /** True while the countdown is filling or locking, i.e. the delayed replay is
+   * not ready yet. */
+  isActive(): boolean {
+    return this.phase !== 'idle'
+  }
+
   sync(targetMs: number, availableMs: number): void {
     if (this.phase === 'locking') return
 

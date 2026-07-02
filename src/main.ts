@@ -392,7 +392,6 @@ async function startMirror(app: HTMLElement): Promise<void> {
       cameraButton.element.hidden = !state.hasFrame
       helpButton.element.hidden = !state.hasFrame
       swipeHandle.hidden = !state.hasFrame
-      guides.setActive(state.hasFrame)
       if (!walkthroughSeen && !walkthroughTriggered && state.hasFrame) {
         walkthroughTriggered = true
         resolvingWalkthrough = true
@@ -400,6 +399,9 @@ async function startMirror(app: HTMLElement): Promise<void> {
       }
       if (state.hasFrame)
         buildOverlay.sync(state.targetOffsetMs, state.availableMs)
+      // Guides only make sense once the delayed replay is ready, so keep them
+      // hidden (and undrawable) through the startup status and the countdown.
+      guides.setActive(state.hasFrame && !buildOverlay.isActive())
       indicator.update(state.effectiveDelayMs, state.paused)
       seekBar.sync(
         state.scrubbing,
