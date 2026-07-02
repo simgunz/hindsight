@@ -42,6 +42,8 @@ const CARDS: CardSpec[] = [
 ]
 
 const CLOSE_MS = 300
+const SWIPE_PX = 45
+const TAP_MAX_PX = 12
 
 export class Walkthrough {
   readonly element: HTMLDivElement
@@ -95,8 +97,37 @@ export class Walkthrough {
     this.nextBtn = next
 
     root.append(skip, stage, dots, next)
-    root.addEventListener('click', () => this.advance())
+    this.attachNavigation(root)
     this.element = root
+  }
+
+  private attachNavigation(root: HTMLDivElement): void {
+    let startX = 0
+    let startY = 0
+    let tracking = false
+    let onButton = false
+    root.addEventListener('pointerdown', (event) => {
+      startX = event.clientX
+      startY = event.clientY
+      tracking = true
+      onButton = (event.target as HTMLElement).closest('button') !== null
+    })
+    root.addEventListener('pointercancel', () => {
+      tracking = false
+    })
+    root.addEventListener('pointerup', (event) => {
+      if (!tracking) return
+      tracking = false
+      // Let Skip / Next handle their own taps.
+      if (onButton) return
+      const dx = event.clientX - startX
+      const dy = event.clientY - startY
+      if (Math.abs(dx) >= SWIPE_PX && Math.abs(dx) > Math.abs(dy)) {
+        dx < 0 ? this.advance() : this.retreat()
+      } else if (Math.hypot(dx, dy) < TAP_MAX_PX) {
+        this.advance()
+      }
+    })
   }
 
   show(): void {
@@ -126,6 +157,13 @@ export class Walkthrough {
       this.render()
     } else {
       this.close()
+    }
+  }
+
+  private retreat(): void {
+    if (this.index > 0) {
+      this.index -= 1
+      this.render()
     }
   }
 

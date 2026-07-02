@@ -407,6 +407,7 @@ body.walkthrough-open .build-overlay {
   );
   opacity: 0;
   transition: opacity 0.3s ease;
+  touch-action: none;
 }
 
 .walkthrough.shown {
