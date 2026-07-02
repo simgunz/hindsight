@@ -1,6 +1,6 @@
 ---
 id: user-stories
-status: implemented
+status: in-progress
 ---
 
 # User Stories
@@ -34,6 +34,8 @@ gallery, watch it, and delete it.
 | US-008 | Live mirrored view | Live mirror | Nice-to-have | implemented |
 | US-009 | Minimal, distraction-free, gesture-driven UI | Experience | Essential | implemented |
 | US-010 | Learn the gestures | Onboarding | Important | implemented |
+| US-011 | Mark reference lines and points on the view | Reference guides | Nice-to-have | approved |
+| US-012 | Adjust, hide, and keep my reference guides | Reference guides | Nice-to-have | approved |
 
 ## Delayed Mirror
 
@@ -105,6 +107,26 @@ few meters in a gym.
 
 *Example: the screen is mostly just my video; controls are gestures rather than
 visible buttons cluttering the view.*
+
+## Reference Guides
+
+### US-011 — Mark reference lines and points on the view
+**As an** athlete reviewing my form, **I want** to place straight reference lines and
+points over the video, **so that** I can check my movement against a fixed reference
+(e.g. that the barbell travels vertically, or that my bow anchor is in the same spot
+each time).
+
+*Example: I rewatch a squat, pause at the bottom, and drop a line along the bar's
+path; because it snaps to true vertical I can see at a glance whether the bar drifted
+forward.*
+
+### US-012 — Adjust, hide, and keep my reference guides
+**As an** athlete, **I want** to move, remove, hide, and keep the guides I placed,
+**so that** I can fine-tune a reference, get a clean view for a rep, and still have
+the reference ready for my next set.
+
+*Example: I nudge the plumb line onto the bar, hide it to watch a clean rep, then
+show it again to compare; it's still there when I start my next set.*
 
 ## Onboarding
 

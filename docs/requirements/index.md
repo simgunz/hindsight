@@ -1,6 +1,6 @@
 ---
 id: requirements
-status: implemented
+status: in-progress
 ---
 
 # Requirements
@@ -10,8 +10,8 @@ from the [user stories](../user-stories/index.md). Each requirement cites the st
 ID(s) it serves. Functional requirements are grouped by feature area in the pages
 under this section.
 
-> **Status:** `implemented` — every requirement below is built. The per-item table
-> records each item's status.
+> **Status:** FR-001–FR-019 are built. FR-020–FR-029 (Reference Guides) are `approved`
+> and being implemented. The per-item table records each item's status.
 
 ## Functional requirements
 
@@ -36,6 +36,16 @@ under this section.
 | FR-017 | First-run gesture walkthrough | US-010 | Onboarding | implemented |
 | FR-018 | Persistent gesture discoverability | US-010 | Onboarding | implemented |
 | FR-019 | In-app gesture reference | US-010 | Onboarding | implemented |
+| FR-020 | Reference line via two taps | US-011 | Reference Guides | approved |
+| FR-021 | Reference point via a single tap | US-011 | Reference Guides | approved |
+| FR-022 | Angle snapping with lock indicator | US-011 | Reference Guides | approved |
+| FR-023 | Guides are screen-space overlays | US-011 | Reference Guides | approved |
+| FR-024 | Placement suspends canvas gestures | US-011 | Reference Guides | approved |
+| FR-025 | Select, move, and delete individual guides | US-012 | Reference Guides | approved |
+| FR-026 | Show/hide all guides | US-012 | Reference Guides | approved |
+| FR-027 | Clear all guides | US-012 | Reference Guides | approved |
+| FR-028 | Guides persist across resume and restart | US-012 | Reference Guides | approved |
+| FR-029 | Guides control surface + first-run coachmark | US-011, US-012 | Reference Guides | approved |
 
 ## Non-functional requirements
 
