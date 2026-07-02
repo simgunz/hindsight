@@ -10,6 +10,7 @@ import { loadDelaySeconds, saveDelaySeconds } from './delayStore'
 import { DelayWheel } from './delayWheel'
 import { createFrameNormalizer } from './frameNormalizer'
 import { createFrameSource, type FrameSource } from './frameSource'
+import { Guides } from './guides'
 import { HelpButton } from './helpButton'
 import { chevronUpIcon } from './icons'
 import { PresetBar } from './presetBar'
@@ -350,6 +351,8 @@ async function startMirror(app: HTMLElement): Promise<void> {
     sheet.open('gestures')
   })
   app.append(helpButton.element)
+
+  new Guides(app)
 
   const openControls = (): void => {
     sheet.open()
