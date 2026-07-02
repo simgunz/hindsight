@@ -1,6 +1,6 @@
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
-type CueKind = 'setup' | 'swipe' | 'double' | 'tap' | 'drag'
+type CueKind = 'concept' | 'setup' | 'swipe' | 'double' | 'tap' | 'drag'
 
 interface CardSpec {
   kind: CueKind
@@ -9,6 +9,11 @@ interface CardSpec {
 }
 
 const CARDS: CardSpec[] = [
+  {
+    kind: 'concept',
+    title: 'A mirror, a few seconds behind',
+    sub: "Finish your set, glance up, watch it back. It's always running — nothing to press, nothing saved.",
+  },
   {
     kind: 'setup',
     title: 'Prop it a few meters away',
@@ -136,10 +141,11 @@ export class Walkthrough {
   private buildCard(spec: CardSpec): HTMLDivElement {
     const card = document.createElement('div')
     card.className = 'wt-card'
-    card.append(this.buildCue(spec.kind))
+    if (spec.kind !== 'concept') card.append(this.buildCue(spec.kind))
 
     const title = document.createElement('div')
-    title.className = spec.kind === 'setup' ? 'wt-title' : 'wt-title accent'
+    const plainTitle = spec.kind === 'setup' || spec.kind === 'concept'
+    title.className = plainTitle ? 'wt-title' : 'wt-title accent'
     title.textContent = spec.title
 
     const sub = document.createElement('div')
